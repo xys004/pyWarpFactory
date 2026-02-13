@@ -4,10 +4,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Add project root to path
+# Assuming we run from StaticWarpBubbles/
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from warpfactory.generator.static_bubble import create_static_bubble_metric
-from warpfactory.analyzer.static_analyzer import analyze_static_bubble
+# Add warpfactory path if needed (Assuming parent folder)
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+
+from static_bubbles.generator import create_static_bubble_metric
+from static_bubbles.analyzer import analyze_static_bubble
 from warpfactory.constants import C
 
 def demo_static_bubble():
@@ -92,8 +96,10 @@ def demo_static_bubble():
     
     plt.title('Static Bubble: Density and Shift')
     fig.tight_layout()  # otherwise the right y-label is slightly clipped
-    plt.savefig('examples/static_bubble_metric.png')
-    print("Saved metric plot to examples/static_bubble_metric.png")
+    # Output to current dir (examples/)
+    output_dir = os.path.dirname(__file__)
+    plt.savefig(os.path.join(output_dir, 'static_bubble_metric.png'))
+    print(f"Saved metric plot to {os.path.join(output_dir, 'static_bubble_metric.png')}")
     
     # Plot 2: Energy Conditions
     plt.figure(figsize=(10, 6))
@@ -107,8 +113,8 @@ def demo_static_bubble():
     plt.title('Energy Conditions (Positive = Satisfied)')
     plt.legend()
     plt.grid(True, alpha=0.3)
-    plt.savefig('examples/static_bubble_ec.png')
-    print("Saved EC plot to examples/static_bubble_ec.png")
+    plt.savefig(os.path.join(output_dir, 'static_bubble_ec.png'))
+    print(f"Saved EC plot to {os.path.join(output_dir, 'static_bubble_ec.png')}")
 
 if __name__ == "__main__":
     demo_static_bubble()

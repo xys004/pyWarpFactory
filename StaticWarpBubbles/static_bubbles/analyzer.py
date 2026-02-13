@@ -1,5 +1,5 @@
 import numpy as np
-from warpfactory.generator.static_bubble import create_static_bubble_metric
+from static_bubbles.generator import create_static_bubble_metric
 
 def analyze_static_bubble(rho_profile, r_grid, r0=None):
     """

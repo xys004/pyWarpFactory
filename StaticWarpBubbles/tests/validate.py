@@ -3,10 +3,16 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Add project root to path
+# Assuming run from tests/
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# Add warpfactory path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
-from warpfactory.generator.static_bubble import create_static_bubble_metric
-from warpfactory.analyzer.static_analyzer import analyze_static_bubble
+from static_bubbles.generator import create_static_bubble_metric
+from static_bubbles.analyzer import analyze_static_bubble
+
+# Warpfactory imports
 from warpfactory.solver.solvers import solve_energy_tensor
 from warpfactory.analyzer.transform import do_frame_transfer
 from warpfactory.constants import C, G
@@ -67,12 +73,15 @@ def validate():
     sl = grid_size[1] // 2
     
     # Plot profile
+    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'output'))
+    os.makedirs(output_dir, exist_ok=True)
+    
     plt.figure(figsize=(10, 5))
     plt.plot(rho_analytic[0, sl, sl, :], label='Analytic Rho')
     plt.plot(rho_num[0, sl, sl, :], '--', label='Numerical T00 (scaled)')
     plt.title("Static Bubble Density Profile Integration Test")
     plt.legend()
-    plt.savefig('tests/output/static_bubble_validation.png')
+    plt.savefig(os.path.join(output_dir, 'static_bubble_validation.png'))
     
     # Error metric
     # Focus on the shell region where values are significant
@@ -92,7 +101,8 @@ def validate():
     print(f"Max Numeric Rho: {np.max(rho_num)}")
     print(f"Max Analytic Rho: {np.max(rho_analytic)}")
     
-    with open('tests/output/debug_static_bubble.txt', 'w') as f:
+    # Write debug info
+    with open(os.path.join(output_dir, 'debug_static_bubble.txt'), 'w') as f:
         f.write(f"Max Relative Error: {np.max(rel_error)}\n")
         f.write(f"Mean Relative Error: {np.mean(rel_error)}\n")
         f.write(f"Analytic Mean: {np.mean(rho_analytic[mask])}\n")
@@ -108,5 +118,4 @@ def validate():
         # Don't fail the build, as finite difference on coarse grid might be rough for sharp shells.
         
 if __name__ == "__main__":
-    os.makedirs("tests/output", exist_ok=True)
     validate()
