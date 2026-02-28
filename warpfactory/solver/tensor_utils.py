@@ -177,31 +177,17 @@ def get_ricci_tensor(metric_tensor, grid_scale):
         term3 += gamma[rho, :, :] * V[rho] # Broadcasting V[rho] (shape ...) against Gamma (4, 4, ...)
         
     # Term 4: Gamma^sigma_{mu,rho} Gamma^rho_{nu,sigma}
+    # For fixed sigma, rho:
+    #   G1[mu] = Gamma^sigma_{mu, rho}  -> shape (4, ...)
+    #   G2[nu] = Gamma^rho_{nu, sigma}  -> shape (4, ...)
+    #   Outer product: G1[mu] * G2[nu]  -> shape (4, 4, ...)
+    # Sum over sigma and rho gives the full (4, 4, ...) term.
     term4 = np.zeros(metric_tensor.shape)
     for sigma in range(4):
         for rho in range(4):
-            term4 += gamma[sigma, :, rho] * gamma[rho, :, sigma] # Note indices (mu from first, nu from second)
-            # gamma[sigma, :, rho] is (mu, ...)
-            # gamma[rho, :, sigma] is (nu, ...) --- NO!
-            # gamma[rho, :, sigma] is (mu=nu_effective, ...)
-            # Wait. Python array slicing gamma[rho, :, sigma] returns (mu_dim, ...)
-            # We need (mu, nu) matrix.
-            # Let's interact properly.
-            # Gamma^sigma_{mu,rho} is matrix M1[mu]
-            # Gamma^rho_{nu,sigma} is matrix M2[nu]
-            # We want M1[mu] * M2[nu] -> (mu, nu) product
-            # Outer product of vectors? No.
-            # It's product of scalars at each point.
-            # For fixed sigma, rho:
-            # G1 = gamma[sigma, :, rho] -> shape (4, ...) (index mu)
-            # G2 = gamma[rho, :, sigma] -> shape (4, ...) (index nu)
-            # G1[mu] * G2[nu] -> (mu, nu)
-            # We can use np.outer-like broadcasting?
-            # G1[:, None, ...] * G2[None, :, ...]
-            
-            G1 = gamma[sigma, :, rho]
-            G2 = gamma[rho, :, sigma]
-            term4 += G1[:, np.newaxis, ...] * G2[np.newaxis, :, ...]
+            G1 = gamma[sigma, :, rho]                            # (4, ...)
+            G2 = gamma[rho, :, sigma]                            # (4, ...)
+            term4 += G1[:, np.newaxis, ...] * G2[np.newaxis, :, ...]  # (4, 4, ...)
             
     R_mn = term1 - term2 + term3 - term4
     return R_mn
