@@ -20,7 +20,7 @@
 %% ── Mathematics ─────────────────────────────────────────────
 \usepackage{amsmath, amssymb, amsthm, mathtools}
 \usepackage{bm}           % bold math
-\usepackage{tensor}       % tensor notation  \indices
+%\usepackage{tensor}       % tensor notation  \indices  (disabled: conflicts with \tensor macro below)
 
 %% ── Code listings ───────────────────────────────────────────
 \usepackage{listings}
@@ -126,7 +126,7 @@
 \newcommand{\dd}{\mathrm{d}}
 \newcommand{\pd}[2]{\dfrac{\partial #1}{\partial #2}}
 \newcommand{\tensor}[1]{\boldsymbol{#1}}
-\newcommand{\Gamma}{\varGamma}
+\renewcommand{\Gamma}{\varGamma}
 \newcommand{\calL}{\mathcal{L}}
 \newcommand{\calM}{\mathcal{M}}
 \newcommand{\vect}[1]{\mathbf{#1}}
@@ -390,7 +390,7 @@ plt.imshow(rho.T, origin='lower', cmap='RdBu_r',
 plt.colorbar(label=r'$\rho = \hat{T}^{00}$')
 plt.xlabel('x')
 plt.ylabel('y')
-plt.title('Energy Density — Alcubierre Warp Drive')
+plt.title('Energy Density -- Alcubierre Warp Drive')
 plt.tight_layout()
 plt.savefig('energy_density.png', dpi=130)
 plt.show()
@@ -646,7 +646,7 @@ import numpy as np
 @dataclass
 class Metric:
     tensor  : np.ndarray          # shape (4, 4, Nt, Nx, Ny, Nz)
-    coords  : Dict[str, np.ndarray]  # {'t':…, 'x':…, 'y':…, 'z':…}
+    coords  : Dict[str, np.ndarray]  # {'t':..., 'x':..., 'y':..., 'z':...}
     scaling : np.ndarray          # [dt, dx, dy, dz]
     name    : str  = "Generic"
     index   : str  = "covariant"  # or "contravariant"
@@ -1194,10 +1194,10 @@ Computes $\partial A / \partial x^{\text{axis}}$ using the stencil of
 \begin{lstlisting}
 from warpfactory.solver.finite_difference import derive_2nd_4th_order
 
-# Unmixed: d²A/dx²
+# Unmixed: d^2A/dx^2
 d2A = derive_2nd_4th_order(A, axis1=2, axis2=2, delta1=dx)
 
-# Mixed: d²A/(dx dy)
+# Mixed: d^2A/(dx dy)
 d2A = derive_2nd_4th_order(A, axis1=2, axis2=3, delta1=dx, delta2=dy)
 \end{lstlisting}
 
@@ -1401,7 +1401,7 @@ flow_lines = get_momentum_flow_lines(
     max_steps     = 200,
     scale_factor  = 1.0
 )
-# Returns list of (N_steps, 3) arrays — one streamline per start point
+# Returns list of (N_steps, 3) arrays -- one streamline per start point
 \end{lstlisting}
 
 Integrates the momentum density $T^{0i}$ (energy flux) as a vector
@@ -1591,7 +1591,11 @@ CPU is competitive; for $50^3$ and above, GPU is strongly recommended.
 
 This chapter provides a consolidated API table for all public functions.
 
-\begin{longtable}{p{4.5cm} p{3.5cm} p{6.5cm}}
+%% Allow line-breaks after underscores in this table (reduces overfull hboxes)
+\renewcommand{\_}{\textunderscore\allowbreak}%
+\small%
+\setlength{\emergencystretch}{3em}%
+\begin{longtable}{p{4.5cm} p{3.0cm} p{6.8cm}}
   \toprule
   \textbf{Function / Class} &
   \textbf{Module} &
@@ -1765,6 +1769,10 @@ This chapter provides a consolidated API table for all public functions.
   & \texttt{($\theta$, $\phi$, g11, g22) $\to$ 7 ndarrays} \\[0.3em]
 
 \end{longtable}
+%% Restore defaults changed for the API table above
+\renewcommand{\_}{\textunderscore}%
+\normalsize%
+\setlength{\emergencystretch}{0em}%
 
 %% ════════════════════════════════════════════════════════════
 \chapter{Practical Guidance}
@@ -1951,7 +1959,7 @@ from warpfactory.analyzer.energy_conditions import (
 from warpfactory.algo.adm import decompose_3plus1
 from warpfactory.visualizer.plotter import plot_tensor, plot_3plus1
 
-# ── Parameters ────────────────────────────────────────────────
+# -- Parameters ------------------------------------------------
 Nt, N = 7, 30
 grid_size  = (Nt, N, N, N)
 grid_scale = (1.0, 0.3, 0.3, 0.3)
@@ -1959,20 +1967,20 @@ world_center = (1.0, N*0.3/2, N*0.3/2, N*0.3/2)
 
 v, R, sigma = 0.5, 1.5, 8.0
 
-# ── Metric ────────────────────────────────────────────────────
-print("Generating Alcubierre metric …")
+# -- Metric ----------------------------------------------------
+print("Generating Alcubierre metric ...")
 metric = create_alcubierre_metric(
     grid_size, grid_scale, world_center, v, R, sigma
 )
 print(f"  Metric shape: {metric.tensor.shape}")
 
-# ── Einstein solver ───────────────────────────────────────────
-print("Solving Einstein field equations …")
+# -- Einstein solver -------------------------------------------
+print("Solving Einstein field equations ...")
 energy = solve_energy_tensor(metric)
 print(f"  Max |T^00|: {np.max(np.abs(energy.tensor[0,0])):.4e}")
 
-# ── Energy conditions ─────────────────────────────────────────
-print("Evaluating energy conditions …")
+# -- Energy conditions -----------------------------------------
+print("Evaluating energy conditions ...")
 results, T_euler = calculate_energy_conditions(
     metric.tensor, metric.scaling
 )
@@ -1984,12 +1992,12 @@ print(f"  rho min = {rho.min():.4e}")
 print(f"  NEC min = {nec.min():.4e}")
 print(f"  WEC min = {wec.min():.4e}")
 
-# ── ADM decomposition ─────────────────────────────────────────
-print("ADM decomposition …")
+# -- ADM decomposition -----------------------------------------
+print("ADM decomposition ...")
 alpha, beta_list, gamma = decompose_3plus1(metric)
 print(f"  Lapse alpha range: [{alpha.min():.4f}, {alpha.max():.4f}]")
 
-# ── Plot ──────────────────────────────────────────────────────
+# -- Plot ------------------------------------------------------
 fig, axes = plt.subplots(2, 3, figsize=(16, 10))
 ext = [0, N*0.3, 0, N*0.3]
 
@@ -2064,11 +2072,11 @@ vmax = max(abs(T_alc[0,0,t_sl,:,:,z_sl]).max(),
 
 axes[0].imshow(T_alc[0,0,t_sl,:,:,z_sl].T, origin='lower',
                extent=ext, cmap='RdBu_r', vmin=-vmax, vmax=vmax)
-axes[0].set_title('Alcubierre — energy density')
+axes[0].set_title('Alcubierre -- energy density')
 
 axes[1].imshow(T_vdb[0,0,t_sl,:,:,z_sl].T, origin='lower',
                extent=ext, cmap='RdBu_r', vmin=-vmax, vmax=vmax)
-axes[1].set_title('Van Den Broeck — energy density')
+axes[1].set_title('Van Den Broeck -- energy density')
 
 plt.tight_layout()
 plt.savefig('comparison.png', dpi=130)
