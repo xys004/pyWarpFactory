@@ -1,0 +1,2200 @@
+%% ============================================================
+%%  pyWarpFactory — Comprehensive User Manual
+%%  LaTeX source
+%% ============================================================
+\documentclass[11pt, a4paper, twoside]{report}
+
+%% ── Encoding & fonts ────────────────────────────────────────
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+%% ── Page geometry ───────────────────────────────────────────
+\usepackage[
+  top=2.5cm, bottom=2.8cm,
+  inner=3.0cm, outer=2.5cm,
+  headheight=14pt
+]{geometry}
+
+%% ── Mathematics ─────────────────────────────────────────────
+\usepackage{amsmath, amssymb, amsthm, mathtools}
+\usepackage{bm}           % bold math
+\usepackage{tensor}       % tensor notation  \indices
+
+%% ── Code listings ───────────────────────────────────────────
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codebg}{HTML}{F7F7F7}
+\definecolor{codeframe}{HTML}{CCCCCC}
+\definecolor{keywordcolor}{HTML}{0000CC}
+\definecolor{stringcolor}{HTML}{008000}
+\definecolor{commentcolor}{HTML}{808080}
+\definecolor{builtincolor}{HTML}{9900CC}
+
+\lstdefinestyle{python}{
+  language         = Python,
+  backgroundcolor  = \color{codebg},
+  frame            = single,
+  rulecolor        = \color{codeframe},
+  basicstyle       = \ttfamily\small,
+  keywordstyle     = \color{keywordcolor}\bfseries,
+  stringstyle      = \color{stringcolor},
+  commentstyle     = \color{commentcolor}\itshape,
+  emph             = {Metric, np, xp, plt, scipy},
+  emphstyle        = \color{builtincolor},
+  showstringspaces = false,
+  breaklines       = true,
+  breakatwhitespace= true,
+  tabsize          = 4,
+  numbers          = left,
+  numberstyle      = \tiny\color{gray},
+  numbersep        = 6pt,
+  xleftmargin      = 1.5em,
+  captionpos       = b,
+}
+\lstset{style=python}
+
+%% ── Coloured boxes ──────────────────────────────────────────
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable, skins, listings}
+
+\newtcolorbox{infobox}[1][]{
+  colback  = blue!5!white,
+  colframe = blue!50!black,
+  fonttitle= \bfseries,
+  title    = Note,
+  #1
+}
+\newtcolorbox{warningbox}[1][]{
+  colback  = orange!10!white,
+  colframe = orange!70!black,
+  fonttitle= \bfseries,
+  title    = Warning,
+  #1
+}
+\newtcolorbox{tipbox}[1][]{
+  colback  = green!6!white,
+  colframe = green!50!black,
+  fonttitle= \bfseries,
+  title    = Tip,
+  #1
+}
+\newtcolorbox{mathbox}[1][]{
+  colback  = gray!7!white,
+  colframe = gray!60,
+  #1
+}
+
+%% ── Tables ──────────────────────────────────────────────────
+\usepackage{booktabs, longtable, array, tabularx, multirow}
+\renewcommand{\arraystretch}{1.25}
+
+%% ── Graphics & floats ───────────────────────────────────────
+\usepackage{graphicx, float}
+\usepackage{caption}
+\captionsetup{font=small, labelfont=bf}
+
+%% ── Headers & footers ───────────────────────────────────────
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE]{\small\leftmark}
+\fancyhead[RO]{\small\rightmark}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+%% ── Hyperlinks ──────────────────────────────────────────────
+\usepackage[
+  colorlinks = true,
+  linkcolor  = blue!70!black,
+  citecolor  = green!50!black,
+  urlcolor   = blue!70!black,
+  pdftitle   = {pyWarpFactory User Manual},
+  pdfauthor  = {Nelson / xys004},
+]{hyperref}
+\usepackage{cleveref}
+
+%% ── Miscellaneous ───────────────────────────────────────────
+\usepackage{parskip}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{pdfpages}   % for possible cover page inclusion
+
+%% ── Custom math macros ──────────────────────────────────────
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\pd}[2]{\dfrac{\partial #1}{\partial #2}}
+\newcommand{\tensor}[1]{\boldsymbol{#1}}
+\newcommand{\Gamma}{\varGamma}
+\newcommand{\calL}{\mathcal{L}}
+\newcommand{\calM}{\mathcal{M}}
+\newcommand{\vect}[1]{\mathbf{#1}}
+\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\sgn}{\operatorname{sgn}}
+\DeclareMathOperator{\tr}{tr}
+
+%% ── Document ────────────────────────────────────────────────
+\begin{document}
+
+%% ════════════════════════════════════════════════════════════
+%%  TITLE PAGE
+%% ════════════════════════════════════════════════════════════
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+
+  {\Huge\bfseries pyWarpFactory}\\[0.4em]
+  {\Large\itshape A Python Toolkit for Warp Drive Spacetime Analysis}\\[2.5em]
+
+  \rule{0.6\linewidth}{1pt}\\[1.5em]
+
+  {\LARGE\bfseries User Manual}\\[1em]
+  {\large Version 1.0 \quad — \quad 2026}\\[3em]
+
+  \begin{minipage}{0.75\textwidth}\centering
+    \large
+    Numerical framework for generating, solving, and analysing\linebreak
+    general-relativistic spacetime metrics, including warp drive\linebreak
+    geometries based on the Alcubierre and Van Den Broeck proposals.
+  \end{minipage}
+
+  \vfill
+
+  {\large
+    \textbf{Author:} Nelson (xys004@gmail.com)\\[0.3em]
+    \textbf{Repository:} \url{https://github.com/xys004/pyWarpFactory}\\[0.3em]
+    \textbf{License:} MIT
+  }
+
+  \vspace{2cm}
+\end{titlepage}
+
+\cleardoublepage
+
+%% ════════════════════════════════════════════════════════════
+%%  ABSTRACT
+%% ════════════════════════════════════════════════════════════
+\begin{abstract}
+\noindent
+\textbf{pyWarpFactory} is a Python port of the MATLAB WarpFactory toolkit
+originally developed for the numerical analysis of exotic spacetime metrics
+in the context of General Relativity.  The library provides a modular
+pipeline covering: (i) metric tensor generation for several physically
+motivated spacetimes (Alcubierre warp drive, Schwarzschild black hole,
+Van Den Broeck, Lentz soliton, warp shell); (ii) numerical solution of
+the Einstein field equations via fourth-order finite differences,
+yielding the stress-energy tensor $T^{\mu\nu}$; (iii) Eulerian frame
+transformations using tetrad decomposition; and (iv) evaluation of
+energy conditions (Null, Weak).  Optional GPU acceleration is supported
+through CuPy as a drop-in replacement for NumPy.
+
+This manual provides a complete reference covering installation,
+physical and mathematical background, detailed API documentation with
+function signatures and return types, worked code examples for every
+metric, and practical guidance on grid sizing, unit conventions, and
+GPU usage.
+\end{abstract}
+
+\cleardoublepage
+
+%% ════════════════════════════════════════════════════════════
+%%  TABLE OF CONTENTS
+%% ════════════════════════════════════════════════════════════
+\tableofcontents
+\cleardoublepage
+
+%% ════════════════════════════════════════════════════════════
+\chapter{Introduction}
+%% ════════════════════════════════════════════════════════════
+
+\section{What is pyWarpFactory?}
+
+pyWarpFactory is a numerical Python library for studying \emph{warp drive}
+spacetimes within the framework of General Relativity (GR).  A warp drive
+spacetime is a solution to the Einstein field equations that permits
+faster-than-light travel by distorting the fabric of spacetime itself,
+contracting it in front of the spacecraft and expanding it behind, without
+violating local Lorentz invariance.
+
+The toolkit supports the full computational pipeline:
+\begin{enumerate}
+  \item \textbf{Metric generation} — construct the covariant 4-metric
+        $g_{\mu\nu}$ for a chosen spacetime on a discrete grid.
+  \item \textbf{Curvature computation} — compute Christoffel symbols
+        $\varGamma^\lambda_{\mu\nu}$, Ricci tensor $R_{\mu\nu}$, and
+        Ricci scalar $R$ via fourth-order finite differences.
+  \item \textbf{Stress-energy tensor} — solve the Einstein field equations
+        to obtain $T^{\mu\nu}$, the distribution of energy, momentum, and
+        stress implied by the chosen geometry.
+  \item \textbf{Energy condition analysis} — evaluate the Null Energy
+        Condition (NEC) and Weak Energy Condition (WEC) at every grid
+        point to identify regions of exotic matter.
+  \item \textbf{ADM decomposition} — extract lapse $\alpha$, shift
+        $\beta^i$, and spatial metric $\gamma_{ij}$ from the 3+1 split.
+  \item \textbf{Visualisation} — produce publication-quality 2-D slice
+        plots of any tensor component.
+\end{enumerate}
+
+\section{Historical Background}
+
+Miguel Alcubierre's 1994 paper \emph{``The warp drive: hyper-fast travel
+within general relativity''} introduced the first mathematically rigorous
+warp drive metric.  Van Den Broeck (1999) subsequently proposed a
+modification that dramatically reduces the total exotic energy required.
+Lentz (2021) presented a soliton-based solution that, under certain
+conditions, claims to avoid exotic matter altogether.  The original
+MATLAB WarpFactory was developed to allow systematic numerical exploration
+of these metrics.  pyWarpFactory ports that capability to Python,
+making it accessible to the broader scientific computing community.
+
+\section{How to Read This Manual}
+
+\begin{itemize}
+  \item \textbf{New users} should read \Cref{chap:install,chap:quickstart}
+        to get running quickly, then consult \Cref{chap:physics} for the
+        mathematical foundations.
+  \item \textbf{Intermediate users} interested in a specific metric should
+        jump directly to the relevant section in \Cref{chap:generators}.
+  \item \textbf{Advanced users} needing full API details should consult
+        \Cref{chap:api}.
+  \item \Cref{chap:colab} documents the self-contained Google Colab
+        notebook included with the project.
+\end{itemize}
+
+%% ════════════════════════════════════════════════════════════
+\chapter{Installation}
+\label{chap:install}
+%% ════════════════════════════════════════════════════════════
+
+\section{Requirements}
+
+pyWarpFactory requires Python 3.8 or newer.  The mandatory dependencies
+are:
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  Package & Minimum version & Purpose \\
+  \midrule
+  \texttt{numpy}      & 1.20.0 & Numerical arrays and linear algebra \\
+  \texttt{scipy}      & 1.7.0  & Interpolation, special functions \\
+  \texttt{matplotlib} & 3.4.0  & Plotting and visualisation \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Optional} (GPU acceleration):
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  Package & Version & Purpose \\
+  \midrule
+  \texttt{cupy-cuda12x} & $\ge$12 & Drop-in NumPy on CUDA GPU \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Installing from Source}
+
+\begin{lstlisting}[caption={Installation from GitHub}]
+# Clone the repository
+git clone https://github.com/xys004/pyWarpFactory.git
+cd pyWarpFactory
+
+# Install (editable mode recommended for development)
+pip install -e .
+
+# Or install dependencies only
+pip install -r requirements.txt
+\end{lstlisting}
+
+\section{Verifying the Installation}
+
+Run the built-in verification script to confirm everything is working
+correctly:
+
+\begin{lstlisting}[caption={Package verification}]
+python tests/verify_package.py
+\end{lstlisting}
+
+This creates a Minkowski flat-space metric, solves for the stress-energy
+tensor (which should be identically zero), and reports \texttt{PASS} if
+$|T^{\mu\nu}|_\infty < 10^{-10}$.
+
+\section{GPU Setup}
+
+On Google Colab (or any CUDA-enabled machine) CuPy is the recommended
+array backend:
+
+\begin{lstlisting}[caption={Install CuPy on Colab (CUDA 12)}]
+pip install cupy-cuda12x
+\end{lstlisting}
+
+The included \texttt{WarpFactory\_Colab.ipynb} notebook performs this
+automatically and falls back to NumPy silently when no GPU is detected.
+
+%% ════════════════════════════════════════════════════════════
+\chapter{Quick Start}
+\label{chap:quickstart}
+%% ════════════════════════════════════════════════════════════
+
+\section{The Simplest Pipeline}
+
+The following five lines run the complete pipeline — from metric creation
+to energy condition evaluation — for the Alcubierre warp drive:
+
+\begin{lstlisting}[caption={Minimal Alcubierre example}]
+from warpfactory.generator.alcubierre import create_alcubierre_metric
+from warpfactory.analyzer.energy_conditions import (
+    calculate_energy_conditions
+)
+
+# 1. Grid definition
+grid_size  = (7, 30, 30, 30)        # (Nt, Nx, Ny, Nz)
+grid_scale = (1.0, 0.3, 0.3, 0.3)  # (dt, dx, dy, dz) code units
+
+# 2. World centre (physical coords of grid centre)
+world_center = (1.0, 4.5, 4.5, 4.5)
+
+# 3. Generate metric
+metric = create_alcubierre_metric(
+    grid_size, grid_scale, world_center,
+    v=0.5,   # bubble speed (fraction of C)
+    R=1.5,   # bubble radius
+    sigma=8.0
+)
+
+# 4. Solve + evaluate energy conditions
+results, T_euler = calculate_energy_conditions(
+    metric.tensor, grid_scale
+)
+
+# 5. Inspect
+import numpy as np
+print("Min NEC:", np.min(results['Null']))   # negative = violated
+print("Energy density min:", np.min(T_euler[0, 0]))
+\end{lstlisting}
+
+\section{Visualising Results}
+
+\begin{lstlisting}[caption={Plotting a 2-D slice of the energy density}]
+import matplotlib.pyplot as plt
+
+t_sl, z_sl = 3, 15               # time and z slice indices
+rho = T_euler[0, 0, t_sl, :, :, z_sl]  # shape (Nx, Ny)
+
+plt.figure(figsize=(6, 5))
+plt.imshow(rho.T, origin='lower', cmap='RdBu_r',
+           extent=[0, 30*0.3, 0, 30*0.3])
+plt.colorbar(label=r'$\rho = \hat{T}^{00}$')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Energy Density — Alcubierre Warp Drive')
+plt.tight_layout()
+plt.savefig('energy_density.png', dpi=130)
+plt.show()
+\end{lstlisting}
+
+\section{Understanding the Output}
+
+\paragraph{The \texttt{results} dictionary} contains two keys:
+\begin{itemize}
+  \item \texttt{results['Null']}: the minimum value of
+        $T_{\mu\nu}k^\mu k^\nu$ over a dense sample of null vectors $k$,
+        evaluated at every grid point.  \textbf{Negative values indicate
+        a Null Energy Condition (NEC) violation.}
+  \item \texttt{results['Weak']}: $\min(\rho,\;\text{NEC})$, combining
+        the energy density requirement with the NEC.
+        \textbf{Negative values indicate a Weak Energy Condition (WEC)
+        violation.}
+\end{itemize}
+
+\paragraph{The \texttt{T\_euler} array} has shape
+\texttt{(4, 4, Nt, Nx, Ny, Nz)} and stores the contravariant
+stress-energy tensor $\hat{T}^{\hat\mu\hat\nu}$ in the Eulerian (locally
+flat) frame.  The energy density seen by a static local observer is
+$\rho = \hat{T}^{00}$.
+
+%% ════════════════════════════════════════════════════════════
+\chapter{Physical and Mathematical Background}
+\label{chap:physics}
+%% ════════════════════════════════════════════════════════════
+
+\section{Conventions}
+
+Throughout this manual and in the code, we use the following conventions:
+
+\begin{itemize}
+  \item \textbf{Signature:} $(-,+,+,+)$ (mostly-positive, or ``East
+        Coast'') — the metric is $g_{\mu\nu} = \diag(-1,1,1,1)$ in flat
+        space.
+  \item \textbf{Index order:} $\mu = 0$ is the time component;
+        $\mu=1,2,3$ are $x,y,z$ respectively.
+  \item \textbf{Units:} Code units $c=G=1$ are used throughout unless
+        explicitly stated.  Physical SI values are stored in
+        \texttt{warpfactory/constants.py}.
+  \item \textbf{Einstein summation:} repeated upper/lower indices are
+        summed over $0,1,2,3$.
+\end{itemize}
+
+\section{The Einstein Field Equations}
+
+The Einstein field equations relate spacetime curvature to energy-momentum:
+\begin{mathbox}
+\begin{equation}
+  G_{\mu\nu} \;=\; R_{\mu\nu} - \tfrac{1}{2}\,R\,g_{\mu\nu}
+             \;=\; \frac{8\pi G}{c^4}\,T_{\mu\nu}
+  \label{eq:EFE}
+\end{equation}
+\end{mathbox}
+where $G_{\mu\nu}$ is the Einstein tensor, $R_{\mu\nu}$ the Ricci tensor,
+$R$ the Ricci scalar, and $T_{\mu\nu}$ the stress-energy tensor.
+
+\subsection{Christoffel Symbols}
+
+Given the metric $g_{\mu\nu}$, the Levi-Civita connection coefficients
+(Christoffel symbols of the second kind) are:
+\begin{equation}
+  \varGamma^\lambda_{\mu\nu}
+  = \tfrac{1}{2}\,g^{\lambda\rho}
+    \bigl(\partial_\mu g_{\nu\rho}
+         + \partial_\nu g_{\mu\rho}
+         - \partial_\rho g_{\mu\nu}\bigr)
+  \label{eq:christoffel}
+\end{equation}
+
+\subsection{Ricci Tensor}
+
+\begin{equation}
+  R_{\mu\nu}
+  = \partial_\rho \varGamma^\rho_{\mu\nu}
+  - \partial_\nu  \varGamma^\rho_{\mu\rho}
+  + \varGamma^\rho_{\mu\nu}\varGamma^\sigma_{\rho\sigma}
+  - \varGamma^\sigma_{\mu\rho}\varGamma^\rho_{\nu\sigma}
+  \label{eq:ricci}
+\end{equation}
+
+\subsection{Ricci Scalar}
+
+\begin{equation}
+  R = g^{\mu\nu} R_{\mu\nu}
+  \label{eq:riccisc}
+\end{equation}
+
+\subsection{Stress-Energy Tensor}
+
+Inverting \cref{eq:EFE}:
+\begin{equation}
+  T_{\mu\nu} = \frac{c^4}{8\pi G}\,G_{\mu\nu},
+  \qquad
+  T^{\mu\nu} = g^{\mu\alpha}g^{\nu\beta}T_{\alpha\beta}
+  \label{eq:SET}
+\end{equation}
+
+\section{Numerical Differentiation}
+
+All partial derivatives are computed using the \emph{fourth-order central
+finite difference} stencil:
+\begin{equation}
+  \pd{f}{x}\bigg|_i
+  \;\approx\;
+  \frac{-f_{i+2} + 8f_{i+1} - 8f_{i-1} + f_{i-2}}{12\,\Delta x}
+  + \mathcal{O}(\Delta x^4)
+  \label{eq:fd4}
+\end{equation}
+This requires at least five grid points in the differentiation direction.
+Boundary cells (indices 0, 1 and $N{-}2$, $N{-}1$) are filled with the
+nearest valid interior derivative value (first-order accurate at the
+boundary), which suffices for the smooth metric profiles typically used.
+
+\section{The 3+1 ADM Decomposition}
+\label{sec:adm}
+
+The Arnowitt--Deser--Misner (ADM) decomposition splits the spacetime
+metric into spatial and temporal parts via:
+\begin{equation}
+  \dd s^2
+  = -\alpha^2\,\dd t^2
+  + \gamma_{ij}\!\left(\dd x^i + \beta^i\,\dd t\right)\!
+                     \left(\dd x^j + \beta^j\,\dd t\right)
+  \label{eq:adm}
+\end{equation}
+where:
+\begin{itemize}
+  \item $\alpha$ is the \textbf{lapse function} — measures proper time
+        elapsed per unit coordinate time.
+  \item $\beta^i$ is the \textbf{shift vector} — describes how spatial
+        coordinates shift between successive time slices.
+  \item $\gamma_{ij}$ is the \textbf{spatial metric} induced on constant-$t$
+        hypersurfaces.
+\end{itemize}
+
+The component relations are:
+\begin{align}
+  g_{00} &= -\alpha^2 + \gamma_{ij}\beta^i\beta^j, &
+  g_{0i} &= \gamma_{ij}\beta^j = \beta_i, &
+  g_{ij} &= \gamma_{ij}
+  \label{eq:adm_comp}
+\end{align}
+
+\section{Energy Conditions}
+\label{sec:ec}
+
+Energy conditions are constraints on $T_{\mu\nu}$ that classical forms
+of matter are expected to satisfy.  Warp drive metrics typically
+\emph{violate} them, implying the need for exotic matter.
+
+\subsection{Null Energy Condition (NEC)}
+For every future-directed null vector $k^\mu$ ($k^\mu k_\mu = 0$):
+\begin{equation}
+  T_{\mu\nu}\,k^\mu k^\nu \;\ge\; 0
+  \label{eq:nec}
+\end{equation}
+
+\subsection{Weak Energy Condition (WEC)}
+For every future-directed timelike vector $t^\mu$ ($t^\mu t_\mu < 0$):
+\begin{equation}
+  T_{\mu\nu}\,t^\mu t^\nu \;\ge\; 0
+  \label{eq:wec}
+\end{equation}
+In the Eulerian frame this reduces to $\rho \ge 0$ combined with the NEC
+(the null direction is the limiting timelike case).
+
+\subsection{Eulerian Observer}
+The Eulerian (normal) observer is at rest in the spatial coordinates.
+Its 4-velocity is $n^\mu = (1/\alpha, -\beta^i/\alpha)$, and the energy
+density it measures is:
+\begin{equation}
+  \rho = T_{\mu\nu}\,n^\mu n^\nu
+       = \hat{T}^{00}
+  \label{eq:rho_eulerian}
+\end{equation}
+where $\hat{T}^{\hat\mu\hat\nu}$ denotes components in the locally flat
+Eulerian tetrad frame.
+
+\section{Eulerian Frame Transformation}
+\label{sec:euleriantf}
+
+To transform the stress-energy tensor to the Eulerian tetrad frame,
+pyWarpFactory uses a Cholesky-like decomposition.  The transformation
+matrix $M^a{}_\mu$ satisfies $M^a{}_\mu M^b{}_\nu g^{\mu\nu} = \eta^{ab}$
+where $\eta = \diag(-1,+1,+1,+1)$.  The Eulerian frame components are:
+\begin{equation}
+  \hat{T}_{ab} = M^{\mu}{}_{a}\,T_{\mu\nu}\,M^{\nu}{}_{b}
+\end{equation}
+The explicit matrix $M$ is computed column-by-column using the recursive
+formulas derived from the metric determinant factorisation (see
+\texttt{get\_eulerian\_transformation\_matrix} in \S\ref{sec:api_transform}).
+
+%% ════════════════════════════════════════════════════════════
+\chapter{Package Structure}
+\label{chap:structure}
+%% ════════════════════════════════════════════════════════════
+
+\section{Directory Layout}
+
+\begin{lstlisting}[language=bash, caption={Repository layout}]
+pyWarpFactory/
+|-- warpfactory/              # Main Python package
+|   |-- __init__.py
+|   |-- constants.py          # Physical constants (C, G)
+|   |-- generator/            # Metric constructors
+|   |   |-- base.py           # Metric dataclass
+|   |   |-- commons.py        # Shared utilities / shape functions
+|   |   |-- alcubierre.py
+|   |   |-- schwarzschild.py
+|   |   |-- van_den_broeck.py
+|   |   |-- lentz.py
+|   |   |-- warp_shell.py
+|   |   |-- minkowski.py
+|   |   `-- modified_time.py
+|   |-- solver/               # Einstein equation solvers
+|   |   |-- solvers.py        # High-level solve_energy_tensor()
+|   |   |-- tensor_utils.py   # Christoffel, Ricci, Einstein, ...
+|   |   `-- finite_difference.py
+|   |-- analyzer/             # Physical analysis
+|   |   |-- energy_conditions.py
+|   |   |-- transform.py      # Frame transformations
+|   |   |-- scalars.py        # ADM scalars (expansion, shear, ...)
+|   |   `-- momentum_flow.py
+|   |-- algo/
+|   |   `-- adm.py            # ADM decompose / reconstruct
+|   |-- utils/
+|   |   `-- helpers.py        # TOV, interpolation, Legendre, ...
+|   `-- visualizer/
+|       `-- plotter.py
+|-- tests/                    # Validation scripts
+|-- WarpFactory_Colab.ipynb   # Self-contained Google Colab notebook
+|-- setup.py
+|-- requirements.txt
+`-- USER_MANUAL_LATEX.tex     # This document
+\end{lstlisting}
+
+\section{Core Data Structure: the \texttt{Metric} Class}
+\label{sec:metric_class}
+
+Every object produced by the generator module (and most objects returned
+by the solver and analyser) is an instance of the \texttt{Metric} dataclass
+defined in \texttt{warpfactory/generator/base.py}.
+
+\begin{lstlisting}[caption={Metric dataclass definition (simplified)}]
+from dataclasses import dataclass, field
+from typing import Dict, Any
+import numpy as np
+
+@dataclass
+class Metric:
+    tensor  : np.ndarray          # shape (4, 4, Nt, Nx, Ny, Nz)
+    coords  : Dict[str, np.ndarray]  # {'t':…, 'x':…, 'y':…, 'z':…}
+    scaling : np.ndarray          # [dt, dx, dy, dz]
+    name    : str  = "Generic"
+    index   : str  = "covariant"  # or "contravariant"
+    params  : Dict[str, Any] = field(default_factory=dict)
+\end{lstlisting}
+
+\paragraph{Key attributes:}
+\begin{description}
+  \item[\texttt{tensor}]
+    The 4-metric $g_{\mu\nu}$ (or any rank-2 tensor) stored as a
+    NumPy/CuPy array of shape \texttt{(4, 4, Nt, Nx, Ny, Nz)}.
+    Axis 0 is the first spacetime index $\mu$; axis 1 is $\nu$;
+    axes 2--5 are the grid dimensions $(t, x, y, z)$.
+
+  \item[\texttt{coords}]
+    Dictionary with keys \texttt{'t'}, \texttt{'x'}, \texttt{'y'},
+    \texttt{'z'}, each an array of shape \texttt{(Nt, Nx, Ny, Nz)}
+    storing the physical (centred) coordinate at every grid point.
+
+  \item[\texttt{scaling}]
+    1-D array \texttt{[dt, dx, dy, dz]} — the uniform grid spacings
+    used by the finite-difference solver.
+
+  \item[\texttt{index}]
+    Either \texttt{'covariant'} (subscript indices, $g_{\mu\nu}$)
+    or \texttt{'contravariant'} (superscript, $T^{\mu\nu}$).
+
+  \item[\texttt{params}]
+    Metric-specific parameters, e.g.\
+    $\{v, R, \sigma\}$ for Alcubierre.
+\end{description}
+
+\section{Grid Conventions}
+
+\begin{itemize}
+  \item Coordinates start at zero: \texttt{x[i] = i * dx}.
+  \item A 1-cell offset is applied inside the generator functions to
+        match MATLAB's 1-based indexing convention:
+        \texttt{x\_phys = (x + dx) - x\_center}.
+  \item \textbf{Minimum grid sizes:} at least 5 points in every
+        direction that is differentiated (all four for the solver).
+        Typical choices: $N_t = 7$, $N_x = N_y = N_z \ge 25$.
+\end{itemize}
+
+%% ════════════════════════════════════════════════════════════
+\chapter{Metric Generators}
+\label{chap:generators}
+%% ════════════════════════════════════════════════════════════
+
+\section{Common Infrastructure}
+
+\subsection{\texttt{create\_grid}}
+\begin{lstlisting}
+from warpfactory.generator.commons import create_grid
+grid = create_grid(grid_size=(Nt, Nx, Ny, Nz),
+                   grid_scale=(dt, dx, dy, dz))
+# Returns: dict {'t': array, 'x': array, 'y': array, 'z': array}
+# Each array has shape (Nt, Nx, Ny, Nz) using 'ij' indexing.
+\end{lstlisting}
+
+\subsection{\texttt{shape\_function\_alcubierre}}
+The Alcubierre shape function $f(r; R, \sigma)$ defines the bubble profile:
+\begin{equation}
+  f(r;\,R,\sigma)
+  = \frac{\tanh\!\bigl[\sigma(R+r)\bigr]
+         + \tanh\!\bigl[\sigma(R-r)\bigr]}
+         {2\,\tanh(\sigma R)}
+  \label{eq:shape_fn}
+\end{equation}
+$f \approx 1$ inside radius $R$ and decays smoothly to $0$ outside;
+$\sigma$ controls the shell thickness.
+
+\begin{lstlisting}
+from warpfactory.generator.commons import shape_function_alcubierre
+import numpy as np
+r = np.linspace(0, 5, 300)
+f = shape_function_alcubierre(r, R=2.0, sigma=8.0)
+\end{lstlisting}
+
+%% ────────────────────────────────────────────────────────────
+\section{Minkowski (Flat Spacetime)}
+%% ────────────────────────────────────────────────────────────
+
+\subsection{Physics}
+
+Flat Minkowski spacetime is the trivial vacuum solution:
+\begin{equation}
+  g_{\mu\nu} = \eta_{\mu\nu} = \diag(-1,+1,+1,+1)
+\end{equation}
+The stress-energy tensor is identically zero everywhere.
+
+\subsection{API}
+
+\begin{lstlisting}[caption={Minkowski metric}]
+from warpfactory.generator.minkowski import create_minkowski_metric
+
+metric = create_minkowski_metric(
+    grid_size  = (7, 20, 20, 20),
+    grid_scale = (1.0, 0.2, 0.2, 0.2)
+)
+\end{lstlisting}
+
+\begin{description}
+  \item[\texttt{grid\_size}] \texttt{(Nt, Nx, Ny, Nz)} — number of
+        grid points in each dimension.
+  \item[\texttt{grid\_scale}] \texttt{(dt, dx, dy, dz)} — spacing in
+        code units.
+  \item[Returns] \texttt{Metric}, \texttt{index='covariant'},
+        \texttt{name='Minkowski'}.
+\end{description}
+
+Use this metric as a sanity check: after running the full solver
+pipeline, all energy condition values should be $\approx 0$.
+
+%% ────────────────────────────────────────────────────────────
+\section{Alcubierre Warp Drive}
+\label{sec:alcubierre}
+%% ────────────────────────────────────────────────────────────
+
+\subsection{Physics}
+
+The Alcubierre metric (1994) describes a bubble of flat spacetime moving
+at arbitrary speed $v$ in the $x$-direction.  In ADM form with lapse
+$\alpha=1$, flat spatial metric $\gamma_{ij}=\delta_{ij}$, and shift:
+\begin{equation}
+  \beta^x = -v\,f(r_s),
+  \qquad \beta^y = \beta^z = 0,
+\end{equation}
+where $r_s = \sqrt{(x - x_s(t))^2 + y^2 + z^2}$ is the distance from
+the moving bubble centre $x_s(t) = v\,t$.  The covariant 4-metric is:
+\begin{align}
+  g_{00} &= -1 + (v\,f)^2, &
+  g_{01} = g_{10} &= -v\,f, \label{eq:alc_metric} \\
+  g_{11} = g_{22} = g_{33} &= 1, &
+  g_{\mu\neq\nu, \,\mu,\nu\ge1} &= 0. \nonumber
+\end{align}
+
+Observers inside the bubble travel effectively at $v > c$ without
+experiencing superluminal motion locally.  The bubble shell requires
+\emph{negative energy density} (exotic matter), violating both the NEC
+and WEC.
+
+\subsection{API}
+
+\begin{lstlisting}[caption={Alcubierre metric}]
+from warpfactory.generator.alcubierre import create_alcubierre_metric
+
+metric = create_alcubierre_metric(
+    grid_size    = (7, 30, 30, 30),
+    grid_scale   = (1.0, 0.3, 0.3, 0.3),
+    world_center = (1.0, 4.5, 4.5, 4.5),  # (tc, xc, yc, zc)
+    v     = 0.5,    # bubble speed (in units of C)
+    R     = 1.5,    # bubble radius
+    sigma = 8.0     # shell steepness
+)
+\end{lstlisting}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{llX}
+  \toprule
+  Parameter & Type & Description \\
+  \midrule
+  \texttt{grid\_size}    & tuple(4) & $(N_t, N_x, N_y, N_z)$ grid dimensions \\
+  \texttt{grid\_scale}   & tuple(4) & $(dt, dx, dy, dz)$ grid spacing \\
+  \texttt{world\_center} & tuple(4) & $(t_c, x_c, y_c, z_c)$ physical centre \\
+  \texttt{v}             & float    & Bubble velocity in units of $C$ \\
+  \texttt{R}             & float    & Bubble radius (same units as grid) \\
+  \texttt{sigma}         & float    & Shell steepness; larger $= $ thinner shell \\
+  \midrule
+  \emph{Returns}         & Metric   & Covariant $g_{\mu\nu}$, \texttt{name='Alcubierre'} \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{warningbox}
+When using SI units ($C = 2.998\times10^8$ m/s) the bubble travels at
+$v \cdot C$ metres per second.  For typical grid sizes of a few metres,
+the bubble exits the domain in nanoseconds.  Use code units ($C=1$) for
+all exploratory work and rescale only when comparing to SI results.
+\end{warningbox}
+
+%% ────────────────────────────────────────────────────────────
+\section{Schwarzschild Black Hole}
+\label{sec:schwarzschild}
+%% ────────────────────────────────────────────────────────────
+
+\subsection{Physics}
+
+The Schwarzschild metric describes the unique spherically symmetric
+vacuum solution with Schwarzschild radius $r_s = 2GM/c^2$:
+\begin{equation}
+  \dd s^2
+  = -\!\left(1 - \frac{r_s}{r}\right)\dd t^2
+  + \left(1 - \frac{r_s}{r}\right)^{\!-1}\!\dd r^2
+  + r^2\,\dd\Omega^2
+  \label{eq:schw_spherical}
+\end{equation}
+pyWarpFactory stores this in quasi-Cartesian coordinates $(t,x,y,z)$
+with off-diagonal spatial terms to encode the angular part.  The
+stress-energy tensor is identically zero everywhere outside the horizon
+(pure vacuum), so energy conditions are trivially satisfied in the
+exterior region.
+
+\subsection{API}
+
+\begin{lstlisting}[caption={Schwarzschild metric}]
+from warpfactory.generator.schwarzschild import create_schwarzschild_metric
+
+# Note: Nt must be 1 (static metric)
+metric = create_schwarzschild_metric(
+    grid_size    = (1, 25, 25, 25),
+    grid_scale   = (1.0, 0.3, 0.3, 0.3),
+    world_center = (1.0, 3.75, 3.75, 3.75),
+    rs           = 1.0   # Schwarzschild radius (code units: rs = 2M)
+)
+\end{lstlisting}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{llX}
+  \toprule
+  Parameter & Type & Description \\
+  \midrule
+  \texttt{grid\_size}    & tuple(4) & Must have $N_t = 1$ (static) \\
+  \texttt{grid\_scale}   & tuple(4) & $(dt, dx, dy, dz)$ \\
+  \texttt{world\_center} & tuple(4) & Spatial origin of the black hole \\
+  \texttt{rs}            & float    & Schwarzschild radius; code units: $r_s = 2M$ \\
+  \midrule
+  \emph{Returns}         & Metric   & Covariant metric, \texttt{name='Schwarzschild'} \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{infobox}
+An \texttt{epsilon = 1e-10} guard prevents division by zero at the
+coordinate singularity $r = 0$.  Keep the singularity away from the grid
+boundary by choosing an appropriate \texttt{world\_center}.
+\end{infobox}
+
+%% ────────────────────────────────────────────────────────────
+\section{Van Den Broeck Metric}
+\label{sec:vdb}
+%% ────────────────────────────────────────────────────────────
+
+\subsection{Physics}
+
+Van Den Broeck (1999) modified the Alcubierre metric by expanding
+the spatial volume inside the bubble by a large factor $(1+A)^2$,
+making the interior macroscopically large while keeping the exterior
+bubble macroscopically small.  This dramatically reduces the total
+exotic energy required.
+
+The spatial metric components are $\gamma_{ij} = B^2(r)\delta_{ij}$
+where:
+\begin{equation}
+  B(r) = 1 + A\,f(r;\,R_1,\sigma_1)
+\end{equation}
+The shift vector uses the standard Alcubierre form but with an
+effective velocity $v_\text{eff} = v(1+A)^2$:
+\begin{equation}
+  g_{00} = -\!\left[1 - B^2 f_s^2\right],\quad
+  g_{01} = -B^2 f_s, \quad
+  g_{11} = g_{22} = g_{33} = B^2
+\end{equation}
+where $f_s = f(r;\,R_2,\sigma_2)\cdot v$.
+
+\subsection{API}
+
+\begin{lstlisting}[caption={Van Den Broeck metric}]
+from warpfactory.generator.van_den_broeck import (
+    create_van_den_broeck_metric
+)
+
+metric = create_van_den_broeck_metric(
+    grid_size    = (7, 30, 30, 30),
+    grid_scale   = (1.0, 0.3, 0.3, 0.3),
+    world_center = (1.0, 4.5, 4.5, 4.5),
+    v      = 0.5,   # base velocity
+    R1     = 2.5,   # spatial expansion radius
+    sigma1 = 6.0,   # expansion steepness
+    R2     = 1.0,   # shift-vector radius
+    sigma2 = 8.0,   # shift steepness
+    A      = 2.0    # spatial expansion factor
+)
+\end{lstlisting}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{llX}
+  \toprule
+  Parameter & Type & Description \\
+  \midrule
+  \texttt{v}      & float & Base velocity \\
+  \texttt{R1, sigma1} & float & Expansion region shape parameters \\
+  \texttt{R2, sigma2} & float & Shift-vector region shape parameters \\
+  \texttt{A}      & float & Spatial expansion factor; effective speed
+                            $v_\text{eff} = v(1+A)^2$ \\
+  \midrule
+  \emph{Returns}  & Metric & Covariant, \texttt{name='Van Den Broeck'} \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+%% ────────────────────────────────────────────────────────────
+\section{Lentz Soliton}
+\label{sec:lentz}
+%% ────────────────────────────────────────────────────────────
+
+\subsection{Physics}
+
+Lentz (2021) proposed a shift-vector soliton built from piecewise
+regions with alternating positive and negative warp factors.  The
+structure is defined on a 2-D template with seven distinct regions
+using values in $\{-2,-1,0,0.5,1\}$.  Under certain conditions it
+was claimed to avoid requiring exotic energy.
+
+\subsection{API}
+
+\begin{lstlisting}[caption={Lentz soliton metric}]
+from warpfactory.generator.lentz import create_lentz_metric
+
+metric = create_lentz_metric(
+    grid_size    = (7, 30, 30, 30),
+    grid_scale   = (1.0, 0.3, 0.3, 0.3),
+    world_center = (1.0, 4.5, 4.5, 4.5),
+    v     = 0.5,
+    scale = None    # auto: max(Nx,Ny,Nz)/7
+)
+\end{lstlisting}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{llX}
+  \toprule
+  Parameter & Type & Description \\
+  \midrule
+  \texttt{v}     & float       & Soliton velocity \\
+  \texttt{scale} & float/None  & Size factor; default = $\max(N)/7$ \\
+  \midrule
+  \emph{Returns} & Metric      & Covariant, \texttt{name='Lentz'} \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+%% ────────────────────────────────────────────────────────────
+\section{Modified Time Metric}
+\label{sec:modtime}
+%% ────────────────────────────────────────────────────────────
+
+\subsection{Physics}
+
+A variant of the Alcubierre metric that modifies the lapse function
+inside the bubble using an additional parameter $A$:
+\begin{equation}
+  g_{00} = -\left[(1 - f) + \tfrac{f}{A}\right]^2 + (v\,f)^2, \quad
+  g_{01} = -v\,f, \quad g_{11} = g_{22} = g_{33} = 1
+\end{equation}
+When $A=1$ this reduces to the standard Alcubierre metric.
+
+\subsection{API}
+
+\begin{lstlisting}[caption={Modified time metric}]
+from warpfactory.generator.modified_time import (
+    create_modified_time_metric
+)
+
+metric = create_modified_time_metric(
+    grid_size    = (7, 25, 25, 25),
+    grid_scale   = (1.0, 0.3, 0.3, 0.3),
+    world_center = (1.0, 3.75, 3.75, 3.75),
+    v     = 0.5,
+    R     = 1.5,
+    sigma = 8.0,
+    A     = 1.5    # lapse modification factor
+)
+\end{lstlisting}
+
+%% ────────────────────────────────────────────────────────────
+\section{Warp Shell}
+\label{sec:warpshell}
+%% ────────────────────────────────────────────────────────────
+
+\subsection{Physics}
+
+The warp shell metric models a massive spherical shell of matter using
+the Tolman-Oppenheimer-Volkoff (TOV) equation for a constant-density
+sphere.  It serves as a physically realistic background for testing the
+solver and energy condition machinery.
+
+The metric is generated in spherical coordinates and transformed to
+Cartesian $(x, y, z)$ using the transformation described in
+\texttt{helpers.sph2cart\_diag}.  Optionally a warp effect
+(\texttt{do\_warp=True}) can be superimposed.
+
+\subsection{API}
+
+\begin{lstlisting}[caption={Warp shell metric}]
+from warpfactory.generator.warp_shell import create_warp_shell_metric
+
+metric = create_warp_shell_metric(
+    grid_size    = (7, 25, 25, 25),
+    grid_scale   = (1.0, 0.3, 0.3, 0.3),
+    world_center = (1.0, 3.75, 3.75, 3.75),
+    mass         = 1.0,     # total shell mass
+    r_inner      = 0.5,     # inner radius
+    r_outer      = 1.5,     # outer radius
+    r_buff       = 0.2,     # buffer distance
+    sigma        = 10.0,    # sigmoid sharpness
+    smooth_factor= 2,       # smoothing iterations
+    v_warp       = 0.0,     # warp velocity (if do_warp=True)
+    do_warp      = False    # enable warp effect
+)
+\end{lstlisting}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{llX}
+  \toprule
+  Parameter      & Type  & Description \\
+  \midrule
+  \texttt{mass}         & float & Total shell mass ($M$) \\
+  \texttt{r\_inner}     & float & Inner radius of the shell \\
+  \texttt{r\_outer}     & float & Outer radius of the shell \\
+  \texttt{r\_buff}      & float & Transition buffer width \\
+  \texttt{sigma}        & float & Sigmoid sharpness at interfaces \\
+  \texttt{smooth\_factor} & int & Number of Legendre smoothing passes \\
+  \texttt{v\_warp}      & float & Warp velocity (if \texttt{do\_warp=True}) \\
+  \texttt{do\_warp}     & bool  & Whether to apply a warp shift \\
+  \midrule
+  \emph{Returns} & Metric & Covariant, \texttt{name='Warp Shell'} \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+%% ════════════════════════════════════════════════════════════
+\chapter{The Solver Module}
+\label{chap:solver}
+%% ════════════════════════════════════════════════════════════
+
+\section{Overview}
+
+The solver module computes the stress-energy tensor $T^{\mu\nu}$ from a
+given metric by numerically evaluating the Einstein field equations
+(\cref{eq:EFE}).  The computational pipeline is:
+
+\begin{center}
+\begin{tabular}{ccccc}
+  $g_{\mu\nu}$ & $\to$ & $\varGamma^\lambda_{\mu\nu}$ & $\to$ &
+  $R_{\mu\nu}$ \\[0.3em]
+  & & & $\to$ & $R$ \\[0.3em]
+  & & & $\to$ & $G_{\mu\nu}$ \\[0.3em]
+  & & & $\to$ & $T^{\mu\nu}$
+\end{tabular}
+\end{center}
+
+\section{High-Level Function: \texttt{solve\_energy\_tensor}}
+
+\begin{lstlisting}[caption={Full Einstein pipeline}]
+from warpfactory.solver.solvers import solve_energy_tensor
+
+energy_tensor = solve_energy_tensor(metric)
+# Returns: Metric object with type='Stress-Energy', index='contravariant'
+# energy_tensor.tensor has shape (4, 4, Nt, Nx, Ny, Nz)
+\end{lstlisting}
+
+\begin{description}
+  \item[Input] A \texttt{Metric} object (any generator output).
+  \item[Output] A new \texttt{Metric} object containing $T^{\mu\nu}$
+        with \texttt{index='contravariant'} and
+        \texttt{type='Stress-Energy'}.
+\end{description}
+
+\begin{infobox}
+\texttt{solve\_energy\_tensor} is the preferred high-level interface.
+The lower-level functions \texttt{get\_christoffel}, \texttt{get\_ricci\_tensor},
+etc.\ are available for custom pipelines.
+\end{infobox}
+
+\section{Low-Level Functions}
+
+\subsection{\texttt{get\_christoffel}}
+\begin{lstlisting}
+from warpfactory.solver.tensor_utils import get_christoffel
+
+gamma = get_christoffel(metric.tensor, metric.scaling)
+# gamma.shape == (4, 4, 4, Nt, Nx, Ny, Nz)
+# Axes: [lambda, mu, nu, t, x, y, z]
+\end{lstlisting}
+Computes $\varGamma^\lambda_{\mu\nu}$ using \cref{eq:christoffel} with
+fourth-order finite differences.
+
+\subsection{\texttt{get\_ricci\_tensor}}
+\begin{lstlisting}
+from warpfactory.solver.tensor_utils import get_ricci_tensor
+
+R_mn = get_ricci_tensor(metric.tensor, metric.scaling)
+# R_mn.shape == (4, 4, Nt, Nx, Ny, Nz)
+\end{lstlisting}
+
+\subsection{\texttt{get\_ricci\_scalar}}
+\begin{lstlisting}
+from warpfactory.solver.tensor_utils import (
+    get_ricci_scalar, get_c4_inv
+)
+g_inv = get_c4_inv(metric.tensor)
+R = get_ricci_scalar(R_mn, g_inv)
+# R.shape == (Nt, Nx, Ny, Nz)
+\end{lstlisting}
+
+\subsection{\texttt{get\_einstein\_tensor}}
+\begin{lstlisting}
+from warpfactory.solver.tensor_utils import get_einstein_tensor
+
+G_mn = get_einstein_tensor(R_mn, R, metric.tensor)
+# G_mn.shape == (4, 4, Nt, Nx, Ny, Nz)
+\end{lstlisting}
+
+\subsection{\texttt{get\_energy\_tensor}}
+\begin{lstlisting}
+from warpfactory.solver.tensor_utils import get_energy_tensor
+
+T_uv = get_energy_tensor(G_mn, g_inv)
+# T_uv.shape == (4, 4, Nt, Nx, Ny, Nz)  -- contravariant T^{mu nu}
+\end{lstlisting}
+
+\subsection{\texttt{get\_c4\_inv} and \texttt{get\_c3\_inv}}
+\begin{lstlisting}
+from warpfactory.solver.tensor_utils import get_c4_inv, get_c3_inv
+
+g_inv      = get_c4_inv(metric.tensor)          # (4,4,...) -> (4,4,...)
+gamma_inv  = get_c3_inv(spatial_metric)          # (3,3,...) -> (3,3,...)
+\end{lstlisting}
+Both functions invert the tensor pointwise using
+\texttt{numpy.linalg.inv} with axis reordering.
+
+\section{Finite Difference Module}
+
+\subsection{\texttt{derive\_1st\_4th\_order}}
+\begin{lstlisting}
+from warpfactory.solver.finite_difference import derive_1st_4th_order
+
+dA_dx = derive_1st_4th_order(A, axis=2, delta=dx)
+\end{lstlisting}
+Computes $\partial A / \partial x^{\text{axis}}$ using the stencil of
+\cref{eq:fd4}.  Returns \texttt{zeros\_like(A)} if
+\texttt{A.shape[axis] < 5}.
+
+\subsection{\texttt{derive\_2nd\_4th\_order}}
+\begin{lstlisting}
+from warpfactory.solver.finite_difference import derive_2nd_4th_order
+
+# Unmixed: d²A/dx²
+d2A = derive_2nd_4th_order(A, axis1=2, axis2=2, delta1=dx)
+
+# Mixed: d²A/(dx dy)
+d2A = derive_2nd_4th_order(A, axis1=2, axis2=3, delta1=dx, delta2=dy)
+\end{lstlisting}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{llX}
+  \toprule
+  Parameter    & Type  & Description \\
+  \midrule
+  \texttt{A}       & ndarray & Array to differentiate \\
+  \texttt{axis}    & int     & Axis index (0-based); note axes 0,1 are
+                               tensor indices, axis 2 = $t$, 3 = $x$, \ldots \\
+  \texttt{delta}   & float   & Grid spacing along that axis \\
+  \midrule
+  \emph{Returns} & ndarray & Same shape as \texttt{A} \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{warningbox}
+Axes 0 and 1 in the \texttt{Metric.tensor} array are the tensor component
+indices $(\mu, \nu)$.  Physical coordinates start at axis 2 ($t$), axis 3
+($x$), axis 4 ($y$), axis 5 ($z$).  Always pass \texttt{axis = \{2,3,4,5\}}
+when differentiating metric components.
+\end{warningbox}
+
+%% ════════════════════════════════════════════════════════════
+\chapter{The Analyzer Module}
+\label{chap:analyzer}
+%% ════════════════════════════════════════════════════════════
+
+\section{Energy Conditions}
+\label{sec:ec_api}
+
+\subsection{Main Function: \texttt{calculate\_energy\_conditions}}
+
+This is the primary high-level function.  It runs the full pipeline
+from a raw metric tensor to condition violation maps.
+
+\begin{lstlisting}[caption={Energy conditions — full pipeline}]
+from warpfactory.analyzer.energy_conditions import (
+    calculate_energy_conditions
+)
+
+results, T_euler = calculate_energy_conditions(
+    metric_tensor = metric.tensor,     # (4,4,Nt,Nx,Ny,Nz)
+    grid_scale    = metric.scaling,    # (dt,dx,dy,dz)
+    num_vecs      = 50                 # null vector sample size
+)
+\end{lstlisting}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{llX}
+  \toprule
+  Parameter        & Type    & Description \\
+  \midrule
+  \texttt{metric\_tensor} & ndarray & Covariant 4-metric, shape
+                                    \texttt{(4,4,Nt,Nx,Ny,Nz)} \\
+  \texttt{grid\_scale}    & tuple   & $(dt, dx, dy, dz)$ \\
+  \texttt{num\_vecs}      & int     & Number of null test vectors on the
+                                    sphere (default 50; more = tighter
+                                    lower bound) \\
+  \midrule
+  \texttt{results['Null']} & ndarray & $\min_k T_{\mu\nu}k^\mu k^\nu$;
+                                      shape \texttt{(Nt,Nx,Ny,Nz)};
+                                      negative = NEC violated \\
+  \texttt{results['Weak']} & ndarray & $\min(\rho,\;\text{NEC})$;
+                                      negative = WEC violated \\
+  \texttt{T\_euler}        & ndarray & $\hat{T}^{\hat\mu\hat\nu}$ in
+                                      Eulerian frame;
+                                      \texttt{T\_euler[0,0]} = $\rho$ \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Null vector sampling.}
+Test vectors are drawn from the Fibonacci lattice on $S^2$, giving a
+near-uniform distribution.  For a reliable minimum, use $\geq 50$
+vectors.  Increasing \texttt{num\_vecs} improves accuracy but increases
+runtime linearly.
+
+\subsection{Helper: \texttt{generate\_uniform\_field}}
+
+\begin{lstlisting}
+from warpfactory.analyzer.energy_conditions import generate_uniform_field
+
+vecs = generate_uniform_field('nulllike', num_angular=100)
+# vecs.shape == (4, 100)
+# vecs[0, :] == 1.0   (time component)
+# vecs[1:, :] are unit 3-vectors distributed on the sphere
+\end{lstlisting}
+
+\section{Frame Transformations}
+\label{sec:api_transform}
+
+\subsection{\texttt{do\_frame\_transfer}}
+
+Transforms a stress-energy tensor to the Eulerian (locally flat) frame:
+
+\begin{lstlisting}
+from warpfactory.analyzer.transform import do_frame_transfer
+
+energy_eu = do_frame_transfer(metric, energy_tensor, frame='Eulerian')
+# energy_eu.index == 'contravariant'
+# energy_eu.frame == 'Eulerian'
+\end{lstlisting}
+
+The transformation proceeds in three steps:
+\begin{enumerate}
+  \item Lower $T^{\mu\nu}$ to $T_{\mu\nu}$ using the curved metric.
+  \item Compute the Cholesky-like tetrad matrix $M$ such that
+        $M^T g M = \eta$.
+  \item Apply: $\hat{T}_{ab} = M^\mu{}_a\,T_{\mu\nu}\,M^\nu{}_b$.
+  \item Raise indices using the flat Minkowski metric: flip sign of
+        $\hat{T}^{0i}$ and $\hat{T}^{i0}$.
+\end{enumerate}
+
+\subsection{\texttt{get\_eulerian\_transformation\_matrix}}
+
+\begin{lstlisting}
+from warpfactory.analyzer.transform import (
+    get_eulerian_transformation_matrix
+)
+
+M = get_eulerian_transformation_matrix(metric.tensor)
+# M.shape == (4, 4, Nt, Nx, Ny, Nz)
+# Satisfies M^T g M = eta at every grid point
+\end{lstlisting}
+
+This function computes the Cholesky factorisation of the metric
+component-by-component.  Each matrix element is expressed in closed
+form using determinant cofactors.
+
+\subsection{\texttt{change\_tensor\_index}}
+
+\begin{lstlisting}
+from warpfactory.analyzer.transform import change_tensor_index
+
+T_cov = change_tensor_index(T_con, 'covariant', metric)
+T_con = change_tensor_index(T_cov, 'contravariant', metric)
+\end{lstlisting}
+
+Raises or lowers both indices of a rank-2 tensor using the formula:
+\begin{equation}
+  T^{\mu\nu} = g^{\mu\alpha}\,T_{\alpha\beta}\,g^{\nu\beta}
+\end{equation}
+implemented as a batched matrix product over the grid axes.
+
+\section{ADM Scalars}
+\label{sec:scalars}
+
+\subsection{\texttt{three\_plus\_one\_decomposer}}
+
+\begin{lstlisting}
+from warpfactory.analyzer.scalars import three_plus_one_decomposer
+
+alpha, beta_down, gamma, beta_up, gamma_up = (
+    three_plus_one_decomposer(metric)
+)
+# alpha.shape    == (Nt, Nx, Ny, Nz)   -- lapse
+# beta_down.shape == (3, Nt, Nx, Ny, Nz) -- covariant shift
+# gamma.shape    == (3,3,Nt,Nx,Ny,Nz)   -- spatial metric
+\end{lstlisting}
+
+Extracts 3+1 ADM variables from the full 4-metric:
+\begin{align}
+  \alpha &= \sqrt{\beta_i\beta^i - g_{00}}, &
+  \beta_i &= g_{0i}, &
+  \gamma_{ij} &= g_{ij}
+\end{align}
+
+\subsection{\texttt{calculate\_scalars}}
+
+\begin{lstlisting}
+from warpfactory.analyzer.scalars import calculate_scalars
+
+scalars = calculate_scalars(metric, grid_scale)
+# scalars['expansion'].shape == (Nt, Nx, Ny, Nz)
+# scalars['shear'].shape     == (Nt, Nx, Ny, Nz)
+# scalars['vorticity'].shape == (Nt, Nx, Ny, Nz)
+\end{lstlisting}
+
+Computes the kinematic quantities of the Eulerian congruence:
+\begin{align}
+  \theta &= \nabla_\mu n^\mu \quad (\text{expansion}) \\
+  \sigma_{ab} &= \nabla_{(a}n_{b)} - \tfrac{1}{3}\theta h_{ab}
+                \quad (\text{shear}) \\
+  \omega_{ab} &= \nabla_{[a}n_{b]} \quad (\text{vorticity})
+\end{align}
+where $n^\mu = (1/\alpha, -\beta^i/\alpha)$ is the Eulerian 4-velocity
+and $h_{ab}$ is the spatial projector.
+
+\section{Momentum Flow Lines}
+
+\begin{lstlisting}
+from warpfactory.analyzer.momentum_flow import get_momentum_flow_lines
+
+flow_lines = get_momentum_flow_lines(
+    energy_tensor = T_euler[:, :, t_sl, :, :, :],  # 3D time slice
+    start_points  = [(12, 12, 12), (15, 15, 15)],
+    step_size     = 0.5,
+    max_steps     = 200,
+    scale_factor  = 1.0
+)
+# Returns list of (N_steps, 3) arrays — one streamline per start point
+\end{lstlisting}
+
+Integrates the momentum density $T^{0i}$ (energy flux) as a vector
+field using trilinear interpolation at each step.
+
+%% ════════════════════════════════════════════════════════════
+\chapter{ADM Decomposition}
+\label{chap:adm}
+%% ════════════════════════════════════════════════════════════
+
+\section{\texttt{decompose\_3plus1}}
+
+\begin{lstlisting}
+from warpfactory.algo.adm import decompose_3plus1
+
+alpha, beta_list, gamma = decompose_3plus1(metric)
+# alpha      : (Nt, Nx, Ny, Nz)
+# beta_list  : [beta_x, beta_y, beta_z] each (Nt, Nx, Ny, Nz)
+# gamma      : (3, 3, Nt, Nx, Ny, Nz)
+\end{lstlisting}
+
+Direct extraction from $g_{\mu\nu}$:
+\begin{align*}
+  \alpha &= \sqrt{-g_{00} + \gamma^{ij}\beta_i\beta_j}, &
+  \beta_i &= g_{0i}, &
+  \gamma_{ij} &= g_{ij}
+\end{align*}
+
+\section{\texttt{reconstruct\_3plus1}}
+
+\begin{lstlisting}
+from warpfactory.algo.adm import reconstruct_3plus1
+
+g = reconstruct_3plus1(alpha, beta_list, gamma)
+# Returns: (4, 4, Nt, Nx, Ny, Nz) metric tensor
+\end{lstlisting}
+
+Reconstructs the full 4-metric from ADM variables using
+\cref{eq:adm_comp}.
+
+%% ════════════════════════════════════════════════════════════
+\chapter{Visualisation}
+\label{chap:vis}
+%% ════════════════════════════════════════════════════════════
+
+\section{\texttt{plot\_tensor}}
+
+\begin{lstlisting}
+from warpfactory.visualizer.plotter import plot_tensor
+
+plot_tensor(
+    tensor          = metric,        # Metric object or raw ndarray
+    slice_planes    = (1, 2),        # keep axes 1,2 (x-y plane)
+    slice_locations = [3, None, None, None, 15],
+                     # [t_idx, -, -, -, z_idx]; None = centre
+    save_dir        = './plots/',    # None = display interactively
+    filename_prefix = 'alcubierre'
+)
+\end{lstlisting}
+
+Generates a $4\times4$ grid of subplots, one for each component
+$g_{\mu\nu}$, showing a 2-D slice.  Upper-triangle components are
+duplicated (exploiting symmetry).
+
+\section{\texttt{plot\_3plus1}}
+
+\begin{lstlisting}
+from warpfactory.visualizer.plotter import plot_3plus1
+
+plot_3plus1(
+    metric          = metric,
+    slice_planes    = (1, 2),
+    slice_locations = None,          # all centre slices
+    save_dir        = './plots/'
+)
+\end{lstlisting}
+
+Produces three figure sets:
+\begin{enumerate}
+  \item Lapse function $\alpha$ (single panel).
+  \item Shift vector $\beta^i$ (three-panel row for $x$, $y$, $z$).
+  \item Spatial metric $\gamma_{ij}$ (six panels for unique components).
+\end{enumerate}
+
+\section{\texttt{get\_slice\_data}}
+
+\begin{lstlisting}
+from warpfactory.visualizer.plotter import get_slice_data
+
+slice2d = get_slice_data(
+    data            = metric.tensor[0, 0],  # (Nt, Nx, Ny, Nz)
+    slice_planes    = (1, 2),               # keep x, y
+    slice_locations = [3, None, None, 15]   # fix t=3, z=15
+)
+# Returns: (Nx, Ny) 2-D array
+\end{lstlisting}
+
+%% ════════════════════════════════════════════════════════════
+\chapter{Google Colab Notebook}
+\label{chap:colab}
+%% ════════════════════════════════════════════════════════════
+
+\section{Overview}
+
+The file \texttt{WarpFactory\_Colab.ipynb} at the project root is a
+fully self-contained Jupyter notebook designed for Google Colab.  All
+physics code is inlined (no local package installation required), GPU
+acceleration is handled automatically via CuPy, and code units
+($C=G=1$) are used throughout.
+
+\section{Quick Start on Colab}
+
+\begin{enumerate}
+  \item Upload \texttt{WarpFactory\_Colab.ipynb} to Google Drive or
+        open it directly on GitHub via the \emph{Open in Colab} badge.
+  \item Set \textbf{Runtime $\to$ Change runtime type $\to$ Hardware
+        accelerator $\to$ GPU} (T4 or A100).
+  \item Click \textbf{Runtime $\to$ Run all} (\texttt{Ctrl+F9}).
+\end{enumerate}
+
+\section{Notebook Structure}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{rlX}
+  \toprule
+  Cell & Type & Content \\
+  \midrule
+  1 & Code & Install NumPy, matplotlib; detect GPU; install CuPy \\
+  2 & Code & Core classes (\texttt{Metric}, constants) \\
+  3 & Code & Grid utilities, shape functions \\
+  4 & Code & Metric generators (Alcubierre, Schwarzschild,
+             Van Den Broeck) \\
+  5 & Code & Finite-difference solver \\
+  6 & Code & Tensor calculations (Christoffel through $T^{\mu\nu}$) \\
+  7 & Code & Frame transforms and energy conditions \\
+  8 & Code & Demo 1 — Alcubierre warp drive \\
+  9 & Code & Demo 1 — Visualisation (energy density + conditions) \\
+  10 & Code & Demo 1 — Shape function plot \\
+  11 & Code & Demo 2 — Schwarzschild black hole \\
+  12 & Code & Demo 3 — Van Den Broeck metric \\
+  13 & Code & GPU performance benchmark \\
+  14 & Markdown & Tips, physics reference, further reading \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\section{GPU Support}
+
+The notebook uses a global \texttt{xp} variable that points to either
+CuPy (GPU) or NumPy (CPU):
+
+\begin{lstlisting}[caption={GPU/CPU selection in notebook}]
+try:
+    import cupy as xp
+    GPU_AVAILABLE = True
+except ImportError:
+    import numpy as xp
+    GPU_AVAILABLE = False
+\end{lstlisting}
+
+All array operations in the inlined physics functions use \texttt{xp},
+making them transparently GPU-accelerated when CuPy is available.  The
+helper \texttt{to\_np(arr)} transfers arrays back to NumPy for
+matplotlib plotting.
+
+\section{Expected Performance}
+
+\begin{center}
+\begin{tabular}{lccc}
+  \toprule
+  Grid size & CPU (NumPy) & GPU (CuPy T4) & Speedup \\
+  \midrule
+  $20^3$  & $\sim$10 s  & $\sim$8 s  & $\sim$1.2$\times$ \\
+  $40^3$  & $\sim$80 s  & $\sim$20 s & $\sim$4$\times$ \\
+  $60^3$  & $\sim$5 min & $\sim$40 s & $\sim$8$\times$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+For grids smaller than $\approx 30^3$ the GPU overhead dominates and
+CPU is competitive; for $50^3$ and above, GPU is strongly recommended.
+
+%% ════════════════════════════════════════════════════════════
+\chapter{Complete API Reference}
+\label{chap:api}
+%% ════════════════════════════════════════════════════════════
+
+This chapter provides a consolidated API table for all public functions.
+
+\begin{longtable}{p{4.5cm} p{3.5cm} p{6.5cm}}
+  \toprule
+  \textbf{Function / Class} &
+  \textbf{Module} &
+  \textbf{Signature / Return} \\
+  \midrule
+  \endfirsthead
+  \multicolumn{3}{c}{\small\itshape (continued)} \\
+  \toprule
+  \textbf{Function / Class} &
+  \textbf{Module} &
+  \textbf{Signature / Return} \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+
+  \texttt{Metric}
+  & \texttt{generator.base}
+  & Dataclass: \texttt{tensor, coords, scaling, name, index, params} \\[0.3em]
+
+  \texttt{create\_grid}
+  & \texttt{generator.commons}
+  & \texttt{(grid\_size, grid\_scale) $\to$ dict} \\[0.3em]
+
+  \texttt{get\_minkowski\_metric}
+  & \texttt{generator.commons}
+  & \texttt{(grid\_size) $\to$ ndarray(4,4,...)} \\[0.3em]
+
+  \texttt{shape\_function\_alcubierre}
+  & \texttt{generator.commons}
+  & \texttt{(r, R, sigma) $\to$ ndarray} \\[0.3em]
+
+  \texttt{create\_minkowski\_metric}
+  & \texttt{generator.minkowski}
+  & \texttt{(grid\_size, grid\_scale) $\to$ Metric} \\[0.3em]
+
+  \texttt{create\_alcubierre\_metric}
+  & \texttt{generator.alcubierre}
+  & \texttt{(grid\_size, grid\_scale, world\_center, v, R, sigma) $\to$ Metric} \\[0.3em]
+
+  \texttt{create\_schwarzschild\_metric}
+  & \texttt{generator.schwarzschild}
+  & \texttt{(grid\_size, grid\_scale, world\_center, rs) $\to$ Metric} \\[0.3em]
+
+  \texttt{create\_van\_den\_broeck\_metric}
+  & \texttt{generator.van\_den\_broeck}
+  & \texttt{(\ldots, v, R1, $\sigma_1$, R2, $\sigma_2$, A) $\to$ Metric} \\[0.3em]
+
+  \texttt{create\_lentz\_metric}
+  & \texttt{generator.lentz}
+  & \texttt{(grid\_size, grid\_scale, world\_center, v, scale) $\to$ Metric} \\[0.3em]
+
+  \texttt{create\_warp\_shell\_metric}
+  & \texttt{generator.warp\_shell}
+  & \texttt{(\ldots, mass, r\_inner, r\_outer, r\_buff, sigma, \ldots) $\to$ Metric} \\[0.3em]
+
+  \texttt{create\_modified\_time\_metric}
+  & \texttt{generator.modified\_time}
+  & \texttt{(\ldots, v, R, sigma, A) $\to$ Metric} \\[0.3em]
+
+  \texttt{solve\_energy\_tensor}
+  & \texttt{solver.solvers}
+  & \texttt{(metric) $\to$ Metric[T\textsuperscript{$\mu\nu$}]} \\[0.3em]
+
+  \texttt{verify\_tensor}
+  & \texttt{solver.tensor\_utils}
+  & \texttt{(tensor, raise\_error) $\to$ bool} \\[0.3em]
+
+  \texttt{get\_c4\_inv}
+  & \texttt{solver.tensor\_utils}
+  & \texttt{(g) $\to$ ndarray g\textsuperscript{$\mu\nu$}} \\[0.3em]
+
+  \texttt{get\_c3\_inv}
+  & \texttt{solver.tensor\_utils}
+  & \texttt{($\gamma$) $\to$ ndarray $\gamma^{ij}$} \\[0.3em]
+
+  \texttt{get\_christoffel}
+  & \texttt{solver.tensor\_utils}
+  & \texttt{(g, grid\_scale) $\to$ ndarray(4,4,4,...)} \\[0.3em]
+
+  \texttt{get\_ricci\_tensor}
+  & \texttt{solver.tensor\_utils}
+  & \texttt{(g, grid\_scale) $\to$ ndarray(4,4,...)} \\[0.3em]
+
+  \texttt{get\_ricci\_scalar}
+  & \texttt{solver.tensor\_utils}
+  & \texttt{(R\_mn, g\_inv) $\to$ ndarray(...)} \\[0.3em]
+
+  \texttt{get\_einstein\_tensor}
+  & \texttt{solver.tensor\_utils}
+  & \texttt{(R\_mn, R, g) $\to$ ndarray(4,4,...)} \\[0.3em]
+
+  \texttt{get\_energy\_tensor}
+  & \texttt{solver.tensor\_utils}
+  & \texttt{(G\_mn, g\_inv) $\to$ ndarray(4,4,...)} \\[0.3em]
+
+  \texttt{derive\_1st\_4th\_order}
+  & \texttt{solver.finite\_difference}
+  & \texttt{(A, axis, delta) $\to$ ndarray} \\[0.3em]
+
+  \texttt{derive\_2nd\_4th\_order}
+  & \texttt{solver.finite\_difference}
+  & \texttt{(A, axis1, axis2, delta1[, delta2]) $\to$ ndarray} \\[0.3em]
+
+  \texttt{calculate\_energy\_conditions}
+  & \texttt{analyzer.energy\_conditions}
+  & \texttt{(g, grid\_scale[, num\_vecs]) $\to$ (dict, ndarray)} \\[0.3em]
+
+  \texttt{generate\_uniform\_field}
+  & \texttt{analyzer.energy\_conditions}
+  & \texttt{(field\_type, num\_angular) $\to$ ndarray(4,N)} \\[0.3em]
+
+  \texttt{do\_frame\_transfer}
+  & \texttt{analyzer.transform}
+  & \texttt{(metric, energy\_tensor, frame) $\to$ Metric} \\[0.3em]
+
+  \texttt{get\_eulerian\_transformation\_matrix}
+  & \texttt{analyzer.transform}
+  & \texttt{(g) $\to$ ndarray M} \\[0.3em]
+
+  \texttt{change\_tensor\_index}
+  & \texttt{analyzer.transform}
+  & \texttt{(tensor, new\_index, metric) $\to$ Metric} \\[0.3em]
+
+  \texttt{three\_plus\_one\_decomposer}
+  & \texttt{analyzer.scalars}
+  & \texttt{(metric) $\to$ ($\alpha$, $\beta_\downarrow$, $\gamma$, $\beta^\uparrow$, $\gamma^{ij}$)} \\[0.3em]
+
+  \texttt{calculate\_scalars}
+  & \texttt{analyzer.scalars}
+  & \texttt{(metric, grid\_scale) $\to$ dict\{expansion, shear, vorticity\}} \\[0.3em]
+
+  \texttt{get\_momentum\_flow\_lines}
+  & \texttt{analyzer.momentum\_flow}
+  & \texttt{(energy\_tensor, start\_pts, step, max\_steps, scale) $\to$ list} \\[0.3em]
+
+  \texttt{plot\_tensor}
+  & \texttt{visualizer.plotter}
+  & \texttt{(tensor[, slice\_planes, locs, save\_dir, prefix])} \\[0.3em]
+
+  \texttt{plot\_3plus1}
+  & \texttt{visualizer.plotter}
+  & \texttt{(metric[, slice\_planes, locs, save\_dir, prefix])} \\[0.3em]
+
+  \texttt{get\_slice\_data}
+  & \texttt{visualizer.plotter}
+  & \texttt{(data, slice\_planes, locs) $\to$ ndarray 2D} \\[0.3em]
+
+  \texttt{decompose\_3plus1}
+  & \texttt{algo.adm}
+  & \texttt{(metric) $\to$ ($\alpha$, [$\beta_i$], $\gamma$)} \\[0.3em]
+
+  \texttt{reconstruct\_3plus1}
+  & \texttt{algo.adm}
+  & \texttt{($\alpha$, $\beta$, $\gamma$) $\to$ ndarray(4,4,...)} \\[0.3em]
+
+  \texttt{tov\_const\_density}
+  & \texttt{utils.helpers}
+  & \texttt{(R, M, rho, r) $\to$ ndarray P} \\[0.3em]
+
+  \texttt{alpha\_numeric\_solver}
+  & \texttt{utils.helpers}
+  & \texttt{(M, P, R, r) $\to$ ndarray $\alpha$} \\[0.3em]
+
+  \texttt{compact\_sigmoid}
+  & \texttt{utils.helpers}
+  & \texttt{(r, R1, R2, sigma, Rbuff) $\to$ ndarray} \\[0.3em]
+
+  \texttt{sph2cart\_diag}
+  & \texttt{utils.helpers}
+  & \texttt{($\theta$, $\phi$, g11, g22) $\to$ 7 ndarrays} \\[0.3em]
+
+\end{longtable}
+
+%% ════════════════════════════════════════════════════════════
+\chapter{Practical Guidance}
+\label{chap:practical}
+%% ════════════════════════════════════════════════════════════
+
+\section{Choosing Grid Parameters}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{lX}
+  \toprule
+  Parameter & Recommendation \\
+  \midrule
+  $N_t$ & Minimum 5; use 7 for safe finite-difference boundary
+           handling.  Static metrics can use $N_t = 1$ (no
+           time derivatives needed). \\
+  $N_x = N_y = N_z$ & $\ge 25$ for exploratory work; $\ge 50$ for
+           publication-quality results.  Increase for sharper
+           shells (large $\sigma$). \\
+  $dx$ & Choose so $R \gg dx$ (at least 5 cells per bubble radius).
+         Typical: $dx = R / 7$. \\
+  $\sigma$ & Shell thickness $\sim R / \sigma$.  For $\sigma = 8$,
+             $R=1.5$, the shell spans $\approx 0.2$ length units.
+             Ensure $dx \ll 0.2$. \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Unit Conventions}
+
+\begin{infobox}
+\textbf{Always use code units ($C=G=1$) for exploratory simulations.}
+
+In SI units, $C = 2.998 \times 10^8$ m/s.  Setting $v = 0.5$ with SI
+constants moves the bubble $1.5 \times 10^8$ m per second, exiting a
+6-metre grid in $40$ nanoseconds ($\Delta t < 10^{-7}$ required for
+numerical stability).  Code units avoid this entirely.
+\end{infobox}
+
+To use code units: edit \texttt{warpfactory/constants.py} or, in the
+Colab notebook, the constants cell sets \texttt{C = G = 1.0} directly.
+
+\section{Interpreting Energy Condition Results}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{lcX}
+  \toprule
+  Quantity & Sign & Interpretation \\
+  \midrule
+  \texttt{results['Null']} & $>0$ & NEC satisfied at this point \\
+  \texttt{results['Null']} & $<0$ & NEC \emph{violated}; exotic matter needed \\
+  \texttt{results['Weak']} & $<0$ & WEC violated; negative energy density \\
+  \texttt{T\_euler[0,0]}  & $<0$ & Negative energy density $\rho < 0$ \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Expected results by metric:}
+\begin{itemize}
+  \item \textbf{Minkowski}: all quantities $\approx 0$.
+  \item \textbf{Alcubierre}: large NEC and WEC violations in the bubble
+        shell, concentrated in a ring around the $x$-axis.
+  \item \textbf{Van Den Broeck}: similar violations but significantly
+        smaller magnitude due to spatial expansion.
+  \item \textbf{Schwarzschild}: all quantities $\approx 0$ (vacuum).
+\end{itemize}
+
+\section{Memory Usage}
+
+The main memory bottleneck is the Christoffel symbol array
+$\varGamma^\lambda_{\mu\nu}$, which has shape
+$(4, 4, 4, N_t, N_x, N_y, N_z)$.  For float64:
+
+\begin{center}
+\begin{tabular}{lccc}
+  \toprule
+  Grid & $\varGamma$ size & $R_{\mu\nu}$ size & Total (approx.) \\
+  \midrule
+  $7 \times 25^3$ & 55 MB  & 5 MB  & $\sim$200 MB \\
+  $7 \times 50^3$ & 440 MB & 40 MB & $\sim$2 GB \\
+  $7 \times 75^3$ & 1.5 GB & 130 MB& $\sim$7 GB \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Colab's T4 GPU has 16 GB VRAM — sufficient for $\sim 60^3$ grids.
+
+\section{Common Errors}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{lX}
+  \toprule
+  Error & Cause and Fix \\
+  \midrule
+  \texttt{ValueError: Tensor must be (4,4,...)} &
+  Wrong array shape passed to a solver function.
+  Ensure \texttt{metric.tensor.shape[:2] == (4,4)}. \\[0.3em]
+
+  All-zero energy tensor &
+  Grid too small ($N < 5$ in some dimension).
+  The finite-difference function returns zeros silently for small arrays. \\[0.3em]
+
+  \texttt{LinAlgError: Singular matrix} &
+  Metric is degenerate (e.g.\ near horizon or at $r=0$).
+  Add an epsilon guard or move the grid away from the singularity. \\[0.3em]
+
+  NaN / Inf in results &
+  Metric ill-conditioned (sharp discontinuity or very large $\sigma$).
+  Increase $N$ or reduce $\sigma$. \\[0.3em]
+
+  Slow computation &
+  Large grid on CPU. Use GPU (\texttt{cupy}) or reduce $N$. \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+%% ════════════════════════════════════════════════════════════
+\chapter{Testing and Validation}
+\label{chap:tests}
+%% ════════════════════════════════════════════════════════════
+
+All validation scripts are in the \texttt{tests/} directory.
+
+\begin{center}
+\begin{tabularx}{\linewidth}{llX}
+  \toprule
+  Script & Metric & Validates \\
+  \midrule
+  \texttt{verify\_package.py}         & Minkowski
+  & $T^{\mu\nu} \approx 0$; smoke test for correct installation \\
+  \texttt{validate\_alcubierre.py}    & Alcubierre
+  & Negative energy density detected; NEC/WEC maps generated \\
+  \texttt{validate\_schwarzschild.py} & Schwarzschild
+  & Ricci scalar $R \approx 0$ (vacuum solution) \\
+  \texttt{validate\_energy\_conditions.py} & Alcubierre
+  & NEC violations $<-10^{-10}$ \\
+  \texttt{validate\_solver.py}        & Alcubierre
+  & Solver returns \texttt{Stress-Energy} type with finite values \\
+  \texttt{validate\_lentz.py}         & Lentz
+  & Metric creation and solver run without error \\
+  \texttt{validate\_van\_den\_broeck.py} & Van Den Broeck
+  & Metric creation successful \\
+  \texttt{validate\_adm.py}           & Alcubierre
+  & ADM decompose/reconstruct round-trips successfully \\
+  \texttt{validate\_visualizer.py}    & Any
+  & Plots saved without error \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Running all tests:}
+\begin{lstlisting}[language=bash]
+cd pyWarpFactory
+python tests/verify_package.py
+python tests/validate_alcubierre.py
+python tests/validate_schwarzschild.py
+python tests/validate_energy_conditions.py
+\end{lstlisting}
+
+%% ════════════════════════════════════════════════════════════
+\chapter{Complete Worked Examples}
+\label{chap:examples}
+%% ════════════════════════════════════════════════════════════
+
+\section{Example 1: Full Alcubierre Analysis}
+
+\begin{lstlisting}[caption={Complete Alcubierre analysis script}]
+"""
+Full Alcubierre warp drive analysis:
+ - Generate metric
+ - Solve Einstein equations
+ - Evaluate energy conditions
+ - ADM decomposition
+ - Plot all results
+"""
+import numpy as np
+import matplotlib.pyplot as plt
+
+from warpfactory.generator.alcubierre import create_alcubierre_metric
+from warpfactory.solver.solvers import solve_energy_tensor
+from warpfactory.analyzer.energy_conditions import (
+    calculate_energy_conditions
+)
+from warpfactory.algo.adm import decompose_3plus1
+from warpfactory.visualizer.plotter import plot_tensor, plot_3plus1
+
+# ── Parameters ────────────────────────────────────────────────
+Nt, N = 7, 30
+grid_size  = (Nt, N, N, N)
+grid_scale = (1.0, 0.3, 0.3, 0.3)
+world_center = (1.0, N*0.3/2, N*0.3/2, N*0.3/2)
+
+v, R, sigma = 0.5, 1.5, 8.0
+
+# ── Metric ────────────────────────────────────────────────────
+print("Generating Alcubierre metric …")
+metric = create_alcubierre_metric(
+    grid_size, grid_scale, world_center, v, R, sigma
+)
+print(f"  Metric shape: {metric.tensor.shape}")
+
+# ── Einstein solver ───────────────────────────────────────────
+print("Solving Einstein field equations …")
+energy = solve_energy_tensor(metric)
+print(f"  Max |T^00|: {np.max(np.abs(energy.tensor[0,0])):.4e}")
+
+# ── Energy conditions ─────────────────────────────────────────
+print("Evaluating energy conditions …")
+results, T_euler = calculate_energy_conditions(
+    metric.tensor, metric.scaling
+)
+t_sl, z_sl = Nt // 2, N // 2
+rho = T_euler[0, 0, t_sl, :, :, z_sl]
+nec = results['Null'][t_sl, :, :, z_sl]
+wec = results['Weak'][t_sl, :, :, z_sl]
+print(f"  rho min = {rho.min():.4e}")
+print(f"  NEC min = {nec.min():.4e}")
+print(f"  WEC min = {wec.min():.4e}")
+
+# ── ADM decomposition ─────────────────────────────────────────
+print("ADM decomposition …")
+alpha, beta_list, gamma = decompose_3plus1(metric)
+print(f"  Lapse alpha range: [{alpha.min():.4f}, {alpha.max():.4f}]")
+
+# ── Plot ──────────────────────────────────────────────────────
+fig, axes = plt.subplots(2, 3, figsize=(16, 10))
+ext = [0, N*0.3, 0, N*0.3]
+
+axes[0,0].imshow(rho.T, origin='lower', extent=ext, cmap='RdBu_r')
+axes[0,0].set_title(r'Energy density $\rho = \hat{T}^{00}$')
+
+axes[0,1].imshow(nec.T, origin='lower', extent=ext, cmap='RdBu_r')
+axes[0,1].set_title('NEC violation map')
+
+axes[0,2].imshow(wec.T, origin='lower', extent=ext, cmap='RdBu_r')
+axes[0,2].set_title('WEC violation map')
+
+shift = beta_list[0][t_sl, :, :, z_sl]
+axes[1,0].imshow(shift.T, origin='lower', extent=ext, cmap='coolwarm')
+axes[1,0].set_title(r'Shift $\beta_x$')
+
+alp_sl = alpha[t_sl, :, :, z_sl]
+axes[1,1].imshow(alp_sl.T, origin='lower', extent=ext, cmap='viridis')
+axes[1,1].set_title(r'Lapse $\alpha$')
+
+gxx = gamma[0, 0, t_sl, :, :, z_sl]
+axes[1,2].imshow(gxx.T, origin='lower', extent=ext, cmap='plasma')
+axes[1,2].set_title(r'Spatial metric $\gamma_{xx}$')
+
+for ax in axes.flat:
+    ax.set_xlabel('x'); ax.set_ylabel('y')
+
+plt.suptitle(f'Alcubierre  v={v}  R={R}  sigma={sigma}',
+             fontsize=13, fontweight='bold')
+plt.tight_layout()
+plt.savefig('alcubierre_full_analysis.png', dpi=130)
+plt.show()
+print("Saved: alcubierre_full_analysis.png")
+\end{lstlisting}
+
+\section{Example 2: Comparing Alcubierre and Van Den Broeck}
+
+\begin{lstlisting}[caption={Side-by-side energy comparison}]
+import numpy as np
+from warpfactory.generator.alcubierre import create_alcubierre_metric
+from warpfactory.generator.van_den_broeck import (
+    create_van_den_broeck_metric
+)
+from warpfactory.analyzer.energy_conditions import (
+    calculate_energy_conditions
+)
+import matplotlib.pyplot as plt
+
+N = 30
+grid_size    = (7, N, N, N)
+grid_scale   = (1.0, 0.3, 0.3, 0.3)
+world_center = (1.0, 4.5, 4.5, 4.5)
+t_sl, z_sl   = 3, N // 2
+
+# Alcubierre
+m_alc = create_alcubierre_metric(
+    grid_size, grid_scale, world_center, 0.5, 1.5, 8.0
+)
+_, T_alc = calculate_energy_conditions(m_alc.tensor, grid_scale)
+
+# Van Den Broeck (same velocity, similar inner radius)
+m_vdb = create_van_den_broeck_metric(
+    grid_size, grid_scale, world_center,
+    v=0.5, R1=2.5, sigma1=6.0, R2=1.0, sigma2=8.0, A=2.0
+)
+_, T_vdb = calculate_energy_conditions(m_vdb.tensor, grid_scale)
+
+fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+ext = [0, N*0.3, 0, N*0.3]
+vmax = max(abs(T_alc[0,0,t_sl,:,:,z_sl]).max(),
+           abs(T_vdb[0,0,t_sl,:,:,z_sl]).max())
+
+axes[0].imshow(T_alc[0,0,t_sl,:,:,z_sl].T, origin='lower',
+               extent=ext, cmap='RdBu_r', vmin=-vmax, vmax=vmax)
+axes[0].set_title('Alcubierre — energy density')
+
+axes[1].imshow(T_vdb[0,0,t_sl,:,:,z_sl].T, origin='lower',
+               extent=ext, cmap='RdBu_r', vmin=-vmax, vmax=vmax)
+axes[1].set_title('Van Den Broeck — energy density')
+
+plt.tight_layout()
+plt.savefig('comparison.png', dpi=130)
+print("Saved comparison.png")
+\end{lstlisting}
+
+%% ════════════════════════════════════════════════════════════
+\appendix
+%% ════════════════════════════════════════════════════════════
+
+\chapter{Physical Constants}
+\label{app:constants}
+
+\begin{center}
+\begin{tabular}{llll}
+  \toprule
+  Symbol & SI Value & Unit & Python name \\
+  \midrule
+  $c$ & $2.99792458 \times 10^8$ & m s$^{-1}$ & \texttt{C} \\
+  $G$ & $6.67430   \times 10^{-11}$ & m$^3$ kg$^{-1}$ s$^{-2}$ & \texttt{G} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+In code units: $C = G = 1$.  The stress-energy tensor scale factor is:
+\begin{equation}
+  \frac{c^4}{8\pi G}
+  \approx 4.815 \times 10^{42} \quad \text{(SI: J m}^{-3}\text{)}
+\end{equation}
+
+\chapter{Tensor Index Notation}
+\label{app:indices}
+
+\begin{center}
+\begin{tabular}{lcl}
+  \toprule
+  Python axis & Index & Physical meaning \\
+  \midrule
+  0 & $\mu = 0$ & time $t$ \\
+  1 & $\mu = 1$ & spatial $x$ \\
+  2 & $\mu = 2$ & spatial $y$ \\
+  3 & $\mu = 3$ & spatial $z$ \\
+  \midrule
+  2 (grid dim) & — & $t$ grid \\
+  3 (grid dim) & — & $x$ grid \\
+  4 (grid dim) & — & $y$ grid \\
+  5 (grid dim) & — & $z$ grid \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Array layout:}
+\texttt{metric.tensor[mu, nu, t\_idx, x\_idx, y\_idx, z\_idx]}
+
+\chapter{Fourth-Order Stencil Derivation}
+\label{app:fd}
+
+The 4th-order central difference stencil for the first derivative is
+derived from the Taylor expansion:
+\begin{align*}
+  f_{i+1} &= f_i + f'_i h + \tfrac{1}{2}f''_i h^2 + \cdots \\
+  f_{i+2} &= f_i + 2f'_i h + 2f''_i h^2 + \cdots
+\end{align*}
+Eliminating higher derivatives yields:
+\begin{equation}
+  f'_i = \frac{-f_{i+2} + 8f_{i+1} - 8f_{i-1} + f_{i-2}}{12h}
+  + \mathcal{O}(h^4)
+\end{equation}
+For the second derivative (unmixed):
+\begin{equation}
+  f''_i = \frac{-f_{i+2} + 16f_{i+1} - 30f_i + 16f_{i-1} - f_{i-2}}{12h^2}
+  + \mathcal{O}(h^4)
+\end{equation}
+
+\chapter{Changelog}
+\label{app:changelog}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{llX}
+  \toprule
+  Version & Date & Changes \\
+  \midrule
+  1.0.0 & 2026-02-28 &
+  Initial Python release: Alcubierre, Schwarzschild, Van Den Broeck,
+  Lentz, Warp Shell, Modified Time metrics; full Einstein solver;
+  NEC/WEC energy conditions; ADM decomposition; Colab notebook. \\[0.3em]
+
+  1.0.1 & 2026-02-28 &
+  Bug fixes: (i) removed double-count in \texttt{get\_ricci\_tensor}
+  term-4 loop; (ii) rewrote \texttt{calculate\_energy\_conditions} to
+  fix API mismatch and NameError in WEC block; (iii) cleaned up
+  \texttt{validate\_alcubierre.py}; (iv) rebuilt Colab notebook with
+  GPU support. \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\chapter{Further Reading}
+\label{app:refs}
+
+\begin{description}
+  \item[Alcubierre (1994)]
+    M.~Alcubierre, \textit{The warp drive: hyper-fast travel within
+    general relativity}, Class.\ Quantum Grav.\ \textbf{11}, L73 (1994).
+
+  \item[Van Den Broeck (1999)]
+    C.~Van Den Broeck, \textit{A warp drive with more reasonable total
+    energy requirements}, Class.\ Quantum Grav.\ \textbf{16}, 3973 (1999).
+
+  \item[Lentz (2021)]
+    E.~W.~Lentz, \textit{Breaking the warp barrier: hyper-fast solitons
+    in Einstein-Maxwell-plasma theory}, Class.\ Quantum Grav.\ \textbf{38},
+    075015 (2021).
+
+  \item[Arnowitt, Deser, Misner (1962)]
+    R.~Arnowitt, S.~Deser, C.~W.~Misner, \textit{The dynamics of
+    general relativity}, Gravitation, ed.\ Witten, Wiley (1962).
+
+  \item[Misner, Thorne, Wheeler (1973)]
+    C.~W.~Misner, K.~S.~Thorne, J.~A.~Wheeler, \textit{Gravitation},
+    Freeman (1973). — Standard GR reference.
+
+  \item[Baumgarte \& Shapiro (2010)]
+    T.~W.~Baumgarte, S.~L.~Shapiro, \textit{Numerical Relativity:
+    Solving Einstein's Equations on the Computer}, Cambridge (2010).
+    — Background on 3+1 formalism and finite differences.
+\end{description}
+
+\end{document}
