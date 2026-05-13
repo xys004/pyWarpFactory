@@ -21,6 +21,41 @@ export PYTHONPATH=$PYTHONPATH:/path/to/WarpFactory
 
 ## Quick Start
 
+### Recommended: One-call analysis
+```python
+from warpfactory import analyze_metric
+from warpfactory.generator.alcubierre import create_alcubierre_metric
+
+metric = create_alcubierre_metric(
+    grid_size=(5, 50, 50, 50),
+    grid_scale=(1.0, 0.2, 0.2, 0.2),
+    world_center=(0, 5.0, 5.0, 5.0),
+    v=0.5,
+    R=2.0,
+    sigma=8.0,
+)
+
+result = analyze_metric(metric)
+
+print(result.summary)
+print("NEC violation:", result.has_violation("Null"))
+print("DEC violation:", result.has_violation("Dominant"))
+print("Minimum NEC:", result.min_condition("Null"))
+```
+
+### Observer modes
+```python
+# Default: finite sampled observers in the Eulerian orthonormal frame.
+sampled = analyze_metric(metric, observer_mode="sampled")
+
+# Optimized audit: sampled maps plus local continuous observer searches
+# at selected candidate points.
+audited = analyze_metric(metric, observer_mode="optimized", audit_points=3)
+
+print(audited.methodology)
+print(audited.observer_audit)
+```
+
 ### Creating an Alcubierre Warp Drive
 ```python
 from warpfactory.generator.alcubierre import create_alcubierre_metric
@@ -126,7 +161,7 @@ energy_eulerian = do_frame_transfer(metric, energy_tensor, frame="Eulerian")
 - `finite_difference.py`: 4th order finite difference derivatives.
 
 ### Analyzer (`warpfactory.analyzer`)
-- `energy_conditions.py`: NEC, WEC, SEC, DEC evaluations.
+- `energy_conditions.py`: NEC, WEC, SEC, DEC evaluations. WEC, SEC, and DEC use sampled timelike observers in the local Eulerian frame.
 - `transform.py`: Frame transformations and index manipulation.
 - `momentum_flow.py`: Flow line tracking.
 - `scalars.py`: Expansion and Shear scalars.

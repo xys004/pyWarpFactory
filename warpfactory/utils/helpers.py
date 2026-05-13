@@ -202,7 +202,9 @@ def alpha_numeric_solver(M, P, R, r):
     # num ~ r^3. denom ~ r^2.
     # limit -> 0.
     
-    dalpha = (term1 + term2) / denom
+    numerator = term1 + term2
+    dalpha = np.zeros_like(numerator, dtype=float)
+    np.divide(numerator, denom, out=dalpha, where=np.abs(denom) > 0)
     dalpha[0] = 0 # manually set
     
     # Integrate
@@ -278,8 +280,9 @@ def compact_sigmoid(r, R1, R2, sigma, Rbuff):
         # This defines the "wall" region?
         # Or is it 0 outside, 1 inside?
         
+        arg = np.clip(arg, -700, 700)
         term = 1.0 / (np.exp(arg) + 1.0)
-        f[mask] = term
+        f[mask] = 1.0 - term
         
     # Add (r >= upper) - 1 ?
     # If r >= upper, term is 0. f = abs(0 + 1 - 1) = 0.

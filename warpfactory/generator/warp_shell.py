@@ -10,9 +10,48 @@ from warpfactory.utils.helpers import (
     sph2cart_diag
 )
 
+
+def _matlab_moving_smooth(values, span):
+    """Approximate MATLAB smooth(y, span) with the default moving average."""
+    span = int(span)
+    if span < 2:
+        return values.copy()
+
+    values = np.asarray(values, dtype=float)
+    n_values = values.size
+    if n_values == 0:
+        return values.copy()
+
+    if span > n_values:
+        span = n_values
+    if span % 2 == 0 and span > 1:
+        span -= 1
+    if span < 2:
+        return values.copy()
+
+    half_width = span // 2
+    cumulative = np.concatenate(([0.0], np.cumsum(values)))
+    smoothed = np.empty_like(values, dtype=float)
+
+    for index in range(n_values):
+        start = max(0, index - half_width)
+        stop = min(n_values, index + half_width + 1)
+        smoothed[index] = (cumulative[stop] - cumulative[start]) / (stop - start)
+
+    return smoothed
+
+
+def _repeat_matlab_smooth(values, span, passes):
+    smoothed = np.asarray(values, dtype=float)
+    for _ in range(passes):
+        smoothed = _matlab_moving_smooth(smoothed, span)
+    return smoothed
+
+
 def create_warp_shell_metric(grid_size, grid_scale, world_center, 
                              mass, r_inner, r_outer, r_buff, sigma, smooth_factor, 
-                             v_warp=0.0, do_warp=False):
+                             v_warp=0.0, do_warp=False, adm_shift_g00=False,
+                             density_smooth_ratio=1.79):
     """
     Generates the Warp Shell metric in a comoving frame.
     
@@ -28,6 +67,12 @@ def create_warp_shell_metric(grid_size, grid_scale, world_center,
         smooth_factor (int): Smoothing iterations.
         v_warp (float): Warp velocity (fraction of c?). MATLAB says "factors of c".
         do_warp (bool): Enable warp effect.
+        adm_shift_g00 (bool): If True, include beta_i beta^i in g_tt so the
+            intended static lapse alpha remains the ADM lapse after adding
+            shift. Defaults to False for WarpFactory MATLAB parity.
+        density_smooth_ratio (float): Ratio between density and pressure moving
+            average spans. WarpFactory's public MATLAB example uses 1.79, while
+            Fuchs et al. report approximately 1.72 in the paper.
         
     Returns:
         Metric object.
@@ -40,14 +85,13 @@ def create_warp_shell_metric(grid_size, grid_scale, world_center,
     # The interpolation logic is point-wise.
     
     # 1. 1D Radial Solve
-    # Define r_sample
-    # worldSize approximation
-    # Use max extent of grid
-    max_x = grid_scale[1] * Nx
-    max_y = grid_scale[2] * Ny
-    max_z = grid_scale[3] * Nz
-    # Dist to center
-    extent = np.sqrt(max_x**2 + max_y**2 + max_z**2) # rough upper bound
+    # Define r_sample. MATLAB uses the distance from worldCenter to the
+    # final 1-based grid point, not the full domain diagonal from the origin.
+    extent = np.sqrt(
+        (grid_scale[1] * Nx - world_center[1]) ** 2
+        + (grid_scale[2] * Ny - world_center[2]) ** 2
+        + (grid_scale[3] * Nz - world_center[3]) ** 2
+    )
     
     r_sample_res = 10000 # Reduced from 10^5 for performance in Python? Or keep high?
     # Python arrays are efficient. 10^5 is fine.
@@ -77,34 +121,14 @@ def create_warp_shell_metric(grid_size, grid_scale, world_center,
     # Pressure profile
     P_prof = tov_const_density(r_outer, M_prof, rho, r_sample)
     
-    # Smoothing
-    # MATLAB: smooth(...) function usually creates moving average.
-    # We can reproduce with convolution.
-    # "1.79*smoothFactor"?
-    # If not critical, skip strict smoothing match or use gaussian filter.
-    # Let's skip smoothing for now or implement simple moving average if essential for numerical stability.
-    # User comment: "smooth walls of the shell".
-    # TOV solution with sharp cutoff might have derivative issues.
-    
-    # Helper for moving average
-    def smooth(arr, span):
-        w = int(span)
-        if w < 2: return arr
-        kernel = np.ones(w) / w
-        return np.convolve(arr, kernel, mode='same')
-        
+    # MATLAB smooth(y, span) defaults to a moving average with truncated
+    # endpoint windows. Zero-padded convolution changes the shell edges and can
+    # dominate the energy-condition balance for large smoothFactor values.
     if smooth_factor > 0:
-        # Repeating smoothing as per MATLAB
-        # rho = smooth(..., 1.79*smoothFactor) 4 times
-        # 1.79? odd constant.
-        span = int(1.79 * smooth_factor)
+        span = int(density_smooth_ratio * smooth_factor)
         if span > 1:
-            for _ in range(4):
-                rho = smooth(rho, span)
-            
-            # P
-            for _ in range(4):
-                P_prof = smooth(P_prof, smooth_factor)
+            rho = _repeat_matlab_smooth(rho, span, 4)
+            P_prof = _repeat_matlab_smooth(P_prof, smooth_factor, 4)
                 
     # Re-integrate Mass
     integrand = 4 * np.pi * rho * r_sample**2
@@ -118,13 +142,17 @@ def create_warp_shell_metric(grid_size, grid_scale, world_center,
     # shift = compactSigmoid(...)
     shift_radial = compact_sigmoid(r_sample, r_inner, r_outer, sigma, r_buff)
     if smooth_factor > 0:
-        shift_radial = smooth(shift_radial, smooth_factor) # twice
-        shift_radial = smooth(shift_radial, smooth_factor)
+        shift_radial = _repeat_matlab_smooth(shift_radial, smooth_factor, 2)
         
     # Solve for B = (1 - 2GM/rc^2)^-1
     # Avoid div by zero.
-    with np.errstate(divide='ignore'):
-         term = 2 * G * M_prof / (r_sample * C**2)
+    term = np.zeros_like(r_sample)
+    np.divide(
+        2 * G * M_prof,
+        r_sample * C**2,
+        out=term,
+        where=r_sample != 0,
+    )
     term[0] = 0 # r=0
     B_prof = 1.0 / (1.0 - term)
     B_prof[0] = 1.0
@@ -158,9 +186,11 @@ def create_warp_shell_metric(grid_size, grid_scale, world_center,
     T, X, Y, Z = coords['t'], coords['x'], coords['y'], coords['z']
     
     # Centers
-    Xc = X - world_center[1]
-    Yc = Y - world_center[2]
-    Zc = Z - world_center[3]
+    # MATLAB WarpFactory loops i=1..N and evaluates i*dx - center.
+    # create_grid is 0-based, so add one grid spacing for parity.
+    Xc = (X + grid_scale[1]) - world_center[1]
+    Yc = (Y + grid_scale[2]) - world_center[2]
+    Zc = (Z + grid_scale[3]) - world_center[3]
     
     R_grid = np.sqrt(Xc**2 + Yc**2 + Zc**2)
     # Avoid R=0 issues for angles
@@ -278,11 +308,24 @@ def create_warp_shell_metric(grid_size, grid_scale, world_center,
         tx = -shift_val * v_warp
         tensor[0, 1] = tx
         tensor[1, 0] = tx
+        if adm_shift_g00:
+            gamma = tensor[1:, 1:]
+            gamma_T = np.moveaxis(gamma, [0, 1], [-2, -1])
+            gamma_up_T = np.linalg.inv(gamma_T)
+            beta_down = np.stack((tx, np.zeros_like(tx), np.zeros_like(tx)), axis=-1)
+            beta_up = np.einsum("...ij,...j->...i", gamma_up_T, beta_down)
+            beta_sq = np.einsum("...i,...i->...", beta_down, beta_up)
+            tensor[0, 0] = tensor[0, 0] + beta_sq
         
     # Create Metric object
     metric_obj = Metric(
         tensor=tensor,
-        coords=coords,
+        coords={
+            't': (T + grid_scale[0]) - world_center[0],
+            'x': Xc,
+            'y': Yc,
+            'z': Zc,
+        },
         scaling=np.array(grid_scale),
         name="Comoving Warp Shell",
         index="covariant",
@@ -293,7 +336,10 @@ def create_warp_shell_metric(grid_size, grid_scale, world_center,
             'M': M_prof,
             'r_sample': r_sample,
             'A': A_prof,
-            'B': B_prof
+            'B': B_prof,
+            'shift_radial': shift_radial,
+            'adm_shift_g00': adm_shift_g00,
+            'density_smooth_ratio': density_smooth_ratio,
         }
     )
     

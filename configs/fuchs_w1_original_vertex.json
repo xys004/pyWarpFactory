@@ -1,0 +1,15 @@
+{
+  "execution_target": "vertex",
+  "recipe": "fuchs-w1",
+  "profile": "original",
+  "static": false,
+  "v_warp": 0.02,
+  "num_vecs": 40,
+  "num_time_vecs": 10,
+  "observer_mode": "sampled",
+  "energy_condition_method": "warpfactory",
+  "solver_method": "christoffel",
+  "tolerance": 0.0,
+  "save_arrays": true,
+  "local_output_dir": "outputs/fuchs_w1_original_vertex"
+}

@@ -1,5 +1,5 @@
 import numpy as np
-from warpfactory.solver.finite_difference import derive_1st_4th_order
+from warpfactory.solver.finite_difference import derive_1st_4th_order, derive_2nd_4th_order
 from warpfactory.constants import C, G
 
 def verify_tensor(tensor, raise_error=True):
@@ -191,6 +191,205 @@ def get_ricci_tensor(metric_tensor, grid_scale):
             
     R_mn = term1 - term2 + term3 - term4
     return R_mn
+
+
+def get_warpfactory_direct_metric_derivatives(metric_tensor, grid_scale):
+    """
+    Build the metric derivative arrays used by WarpFactory's direct Ricci path.
+
+    Returns:
+        diff_1[mu][nu][coord] = partial_coord g_{mu,nu}
+        diff_2[mu][nu][coord1][coord2] = partial_coord1 partial_coord2 g_{mu,nu}
+
+    The time-derivative scaling mirrors get_ricci_tensor_warpfactory_direct.
+    """
+    deltas = [float(x) for x in grid_scale]
+    diff_1 = [[[None for _ in range(4)] for _ in range(4)] for _ in range(4)]
+    diff_2 = [[[[None for _ in range(4)] for _ in range(4)] for _ in range(4)] for _ in range(4)]
+
+    for i in range(4):
+        for j in range(4):
+            gij = metric_tensor[i, j]
+            for k in range(4):
+                value = derive_1st_4th_order(gij, k, deltas[k])
+                if k == 0:
+                    value = value / C
+                diff_1[i][j][k] = value
+
+                for n in range(4):
+                    value2 = derive_2nd_4th_order(gij, k, n, deltas[k], deltas[n])
+                    if (n == 0 and k != 0) or (n != 0 and k == 0):
+                        value2 = value2 / C
+                    elif n == 0 and k == 0:
+                        value2 = value2 / (C**2)
+                    diff_2[i][j][k][n] = value2
+
+    return diff_1, diff_2
+
+
+def get_christoffel_from_metric_derivatives(metric_tensor, diff_1):
+    """
+    Compute Christoffel symbols from precomputed metric first derivatives.
+
+    The diff_1 layout is diff_1[mu][nu][coord], matching
+    get_warpfactory_direct_metric_derivatives.
+    """
+    g_inv = get_c4_inv(metric_tensor)
+    shape = metric_tensor.shape[2:]
+    gamma = np.zeros((4, 4, 4) + shape)
+
+    for lam in range(4):
+        for mu in range(4):
+            for nu in range(4):
+                value = np.zeros(shape)
+                for rho in range(4):
+                    term = (
+                        diff_1[nu][rho][mu]
+                        + diff_1[mu][rho][nu]
+                        - diff_1[mu][nu][rho]
+                    )
+                    value = value + 0.5 * g_inv[lam, rho] * term
+                gamma[lam, mu, nu] = value
+
+    return gamma
+
+
+def get_christoffel_derivative_from_metric_derivatives(metric_tensor, diff_1, diff_2):
+    """
+    Compute partial_sigma Gamma^lam_{mu,nu} from metric first/second derivatives.
+
+    The returned layout is d_gamma[sigma, lam, mu, nu, ...].
+    """
+    g_inv = get_c4_inv(metric_tensor)
+    shape = metric_tensor.shape[2:]
+    d_g_inv = np.zeros((4, 4, 4) + shape)
+
+    for sigma in range(4):
+        for lam in range(4):
+            for rho in range(4):
+                value = np.zeros(shape)
+                for alpha in range(4):
+                    for beta in range(4):
+                        value = value - (
+                            g_inv[lam, alpha]
+                            * g_inv[rho, beta]
+                            * diff_1[alpha][beta][sigma]
+                        )
+                d_g_inv[sigma, lam, rho] = value
+
+    d_gamma = np.zeros((4, 4, 4, 4) + shape)
+    for sigma in range(4):
+        for lam in range(4):
+            for mu in range(4):
+                for nu in range(4):
+                    value = np.zeros(shape)
+                    for rho in range(4):
+                        first_term = (
+                            diff_1[nu][rho][mu]
+                            + diff_1[mu][rho][nu]
+                            - diff_1[mu][nu][rho]
+                        )
+                        second_term = (
+                            diff_2[nu][rho][sigma][mu]
+                            + diff_2[mu][rho][sigma][nu]
+                            - diff_2[mu][nu][sigma][rho]
+                        )
+                        value = value + 0.5 * (
+                            d_g_inv[sigma, lam, rho] * first_term
+                            + g_inv[lam, rho] * second_term
+                        )
+                    d_gamma[sigma, lam, mu, nu] = value
+
+    return d_gamma
+
+
+def get_ricci_tensor_christoffel_from_warpfactory_derivatives(metric_tensor, grid_scale):
+    """
+    Compute Ricci via the Christoffel formula using the direct solver's
+    precomputed metric derivative arrays.
+
+    This is a diagnostic bridge: if it agrees with get_ricci_tensor while
+    get_ricci_tensor_warpfactory_direct disagrees, the finite-difference arrays
+    are not the primary problem and the direct Ricci expansion is suspect.
+    """
+    diff_1, diff_2 = get_warpfactory_direct_metric_derivatives(metric_tensor, grid_scale)
+    gamma = get_christoffel_from_metric_derivatives(metric_tensor, diff_1)
+    d_gamma = get_christoffel_derivative_from_metric_derivatives(metric_tensor, diff_1, diff_2)
+    shape = metric_tensor.shape[2:]
+
+    trace_gamma = np.zeros((4,) + shape)
+    for rho in range(4):
+        for sigma in range(4):
+            trace_gamma[rho] = trace_gamma[rho] + gamma[sigma, rho, sigma]
+
+    ricci = np.zeros(metric_tensor.shape)
+    for mu in range(4):
+        for nu in range(4):
+            value = np.zeros(shape)
+            for rho in range(4):
+                value = value + d_gamma[rho, rho, mu, nu]
+                value = value - d_gamma[nu, rho, mu, rho]
+                value = value + gamma[rho, mu, nu] * trace_gamma[rho]
+                for sigma in range(4):
+                    value = value - gamma[sigma, mu, rho] * gamma[rho, nu, sigma]
+            ricci[mu, nu] = value
+
+    return ricci
+
+
+def get_ricci_tensor_warpfactory_direct(metric_tensor, grid_scale):
+    """
+    Port of MATLAB WarpFactory's ricciT.m direct Ricci implementation.
+
+    This uses first and second finite differences of the covariant metric
+    directly, instead of differentiating Christoffel symbols. It is intended
+    for numerical parity with MATLAB WarpFactory's met2den.m.
+    """
+    g_inv = get_c4_inv(metric_tensor)
+    shape = metric_tensor.shape[2:]
+    diff_1, diff_2 = get_warpfactory_direct_metric_derivatives(metric_tensor, grid_scale)
+
+    ricci = np.zeros((4, 4) + shape)
+    for i in range(4):
+        for j in range(i, 4):
+            rij = np.zeros(shape)
+            for a in range(4):
+                for b in range(4):
+                    temp2 = -(
+                        diff_2[i][j][a][b]
+                        + diff_2[a][b][i][j]
+                        - diff_2[i][b][j][a]
+                        - diff_2[j][b][i][a]
+                    )
+
+                    for r in range(4):
+                        temp3 = np.zeros(shape)
+                        temp4 = np.zeros(shape)
+                        temp5 = np.zeros(shape)
+                        for d in range(4):
+                            temp3 = temp3 + diff_1[b][d][j] * g_inv[r, d]
+                            temp4 = temp4 + (diff_1[j][d][b] - diff_1[j][b][d]) * g_inv[r, d]
+                            temp5 = temp5 - (
+                                diff_1[b][d][a]
+                                + diff_1[b][d][a]
+                                - diff_1[a][b][d]
+                            ) * g_inv[r, d]
+
+                        temp2 = temp2 + (
+                            temp4 * diff_1[i][r][a]
+                            + 0.5
+                            * temp3
+                            * diff_1[a][r][i]
+                            + 0.5
+                            * temp5
+                            * (diff_1[j][r][i] + diff_1[i][r][j] - diff_1[j][i][r])
+                        )
+
+                    rij = rij + g_inv[a, b] * temp2
+            ricci[i, j] = 0.5 * rij
+            ricci[j, i] = ricci[i, j]
+
+    return ricci
 
 def get_ricci_scalar(R_mn, g_inv):
     """

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pyWarpfactory | Cloud Tensor Engine</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <h1>pyWarpfactory</h1>
+            <span class="brand-badge">Cloud Engine</span>
+        </div>
+        <div class="status-indicator">
+            <span class="dot" id="status-dot"></span>
+            <span id="status-text">GCP: IDLE</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Control Panel -->
+        <aside class="glass-panel">
+            <div class="panel-header">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                Metric Parameters
+            </div>
+            
+            <form id="warp-form">
+                <div class="form-group">
+                    <label>Spacetime Ansatz</label>
+                    <select id="metric-type" name="metric">
+                        <option value="Alcubierre">Alcubierre (Original)</option>
+                        <option value="Lentz">Lentz (Positive Energy)</option>
+                        <option value="Natario">Natário (Zero Expansion)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Apparent Velocity (v_s / c)</label>
+                    <div class="range-wrap">
+                        <input type="range" id="velocity" name="velocity" min="0.1" max="10.0" step="0.1" value="2.0" oninput="document.getElementById('vel-val').textContent = this.value">
+                        <span class="range-val" id="vel-val">2.0</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Bubble Radius (R)</label>
+                    <div class="range-wrap">
+                        <input type="range" id="radius" name="radius" min="10" max="1000" step="10" value="100" oninput="document.getElementById('rad-val').textContent = this.value">
+                        <span class="range-val" id="rad-val">100</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Wall Thickness (σ)</label>
+                    <div class="range-wrap">
+                        <input type="range" id="thickness" name="thickness" min="1" max="50" step="1" value="10" oninput="document.getElementById('thick-val').textContent = this.value">
+                        <span class="range-val" id="thick-val">10</span>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label>Grid Resolution (3D Compute)</label>
+                    <select id="resolution" name="resolution">
+                        <option value="50">Low (50x50x50) - Local</option>
+                        <option value="100" selected>Medium (100x100x100) - GCP</option>
+                        <option value="256">High (256x256x256) - GCP GPU</option>
+                    </select>
+                </div>
+
+                <button type="submit" id="btn-submit" class="btn-dispatch">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    Dispatch to GCP
+                </button>
+            </form>
+        </aside>
+
+        <!-- Viewport & Logs -->
+        <main class="viewport-area">
+            
+            <div class="glass-panel" style="padding: 1rem;">
+                <div class="visual-box" id="visual-box">
+                    <div class="grid-lines"></div>
+                    <div class="placeholder-visual" id="placeholder-visual">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                        <p>Awaiting Spacetime Parameters</p>
+                    </div>
+                    
+                    <div class="result-overlay" id="result-overlay">
+                        <div class="result-row">
+                            <span class="result-label">Metric</span>
+                            <span class="result-val safe" id="res-metric">Alcubierre</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label">Violation Volume</span>
+                            <span class="result-val" id="res-vol">--</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label">Max Negative Energy</span>
+                            <span class="result-val" id="res-energy">--</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+            </div>
+
+            <div class="glass-panel" style="padding: 1rem;">
+                <div class="terminal">
+                    <div class="terminal-header">
+                        <span>GCP Orchestration Console</span>
+                        <span style="color: #00e5ff;">warpopt / us-central1-a</span>
+                    </div>
+                    <div id="log-stream">
+                        <div class="log-line"><span class="log-time">00:00:00</span><span class="log-msg">System initialized. Awaiting dispatch command...</span></div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        const form = document.getElementById('warp-form');
+        const btnSubmit = document.getElementById('btn-submit');
+        const statusText = document.getElementById('status-text');
+        const statusDot = document.getElementById('status-dot');
+        const logStream = document.getElementById('log-stream');
+        const progressBar = document.getElementById('progress-bar');
+        const resultOverlay = document.getElementById('result-overlay');
+        const placeholder = document.getElementById('placeholder-visual');
+
+        function formatTime() {
+            const now = new Date();
+            return now.toTimeString().split(' ')[0];
+        }
+
+        function appendLog(msg) {
+            const div = document.createElement('div');
+            div.className = 'log-line';
+            
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'log-time';
+            timeSpan.textContent = formatTime();
+            
+            const msgSpan = document.createElement('span');
+            msgSpan.className = 'log-msg';
+            if (msg.includes('Complete') || msg.includes('Ready')) msgSpan.classList.add('highlight');
+            msgSpan.textContent = msg;
+            
+            div.appendChild(timeSpan);
+            div.appendChild(msgSpan);
+            logStream.appendChild(div);
+            
+            // Auto scroll
+            logStream.parentElement.scrollTop = logStream.parentElement.scrollHeight;
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const params = Object.fromEntries(formData.entries());
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = 'Dispatching...';
+            logStream.innerHTML = '';
+            resultOverlay.classList.remove('visible');
+            placeholder.style.display = 'block';
+            
+            await fetch('/api/dispatch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(params)
+            });
+
+            pollStatus();
+        });
+
+        let pollInterval;
+        let lastLogCount = 0;
+
+        function pollStatus() {
+            pollInterval = setInterval(async () => {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+
+                // Update Status Indicator
+                statusText.textContent = `GCP: ${data.status}`;
+                if (data.status === 'IDLE' || data.status === 'COMPLETED') {
+                    statusDot.classList.remove('active');
+                } else {
+                    statusDot.classList.add('active');
+                }
+
+                // Update Progress
+                progressBar.style.width = `${data.progress}%`;
+
+                // Update Logs
+                if (data.logs.length > lastLogCount) {
+                    for (let i = lastLogCount; i < data.logs.length; i++) {
+                        appendLog(data.logs[i]);
+                    }
+                    lastLogCount = data.logs.length;
+                }
+
+                if (data.status === 'COMPLETED') {
+                    clearInterval(pollInterval);
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg> Dispatch to GCP';
+                    
+                    if (data.results) {
+                        document.getElementById('res-metric').textContent = data.results.metric_type;
+                        document.getElementById('res-vol').textContent = data.results.violation_volume;
+                        document.getElementById('res-energy').textContent = data.results.max_negative_energy;
+                        
+                        placeholder.style.display = 'none';
+                        resultOverlay.classList.add('visible');
+                    }
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
