@@ -12,6 +12,17 @@ outputs/*
 *.mat
 *.png
 *.log
+*.aux
+*.bbl
+*.blg
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+paper/
 /2.16.0
 .secrets/
 *.key.json
